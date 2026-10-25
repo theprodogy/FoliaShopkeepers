@@ -6,7 +6,7 @@ plugins {
 
 dependencies {
 	testImplementation project(':shopkeepers-main')
-	testImplementation project(path: ':shopkeepers-v1_21_R5')
+	testImplementation project(path: ':shopkeepers-v1_21_R9')
 	testImplementation libs.spigot.api
 	testImplementation libs.junit
 	testImplementation libs.hamcrest

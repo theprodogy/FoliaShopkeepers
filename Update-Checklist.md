@@ -18,9 +18,9 @@ To support the latest mappings version:
 	* Increment the revision number of the compat version (behind the 'R'). Note that for some minor Minecraft updates this version may not necessarily align with CraftBukkit's 'Minecraft Version'.
 
 * Add two new modules (subprojects) for the new compat version, one for Spigot and one for Paper:
-	* Copy an existing module and rename module and package folders.
+	* Copy an existing 'modules/versions/<Minecraft version>' folder, rename it to the new Minecraft version, and rename the package folders.
 	* Update the CraftBukkit version inside the 'build.gradle' file of the new module.
-	* Add an entry for the module in the root 'settings.gradle' file.
+	* Add an entry (project name and folder) for the module in the root 'settings.gradle' file.
 	* Add an entry for the module in the 'build.gradle' file of the 'dist' module.
 	* Update the CompatProviderImpl class:
 		* Package name.
