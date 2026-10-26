@@ -15,6 +15,8 @@ if (!project.hasProperty('craftbukkitVersion')) {
 repositories {
 	// Paper
 	maven { url = 'https://repo.papermc.io/repository/maven-public/' }
+	// Mojang libraries required by older dev bundles:
+	maven { url = 'https://libraries.minecraft.net/' }
 }
 
 dependencies {

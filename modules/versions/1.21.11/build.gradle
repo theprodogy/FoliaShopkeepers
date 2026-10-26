@@ -4,3 +4,10 @@ ext {
 
 apply from: rootProject.file('modules/shared/nmsModulePaper.gradle')
 
+
+dependencies {
+	// The dev bundle omits the version of adventure-text-serializer-ansi and does not expose
+	// DataFixerUpper on the compile classpath:
+	implementation platform('net.kyori:adventure-bom:4.26.1')
+	compileOnly 'com.mojang:datafixerupper:9.0.19'
+}
