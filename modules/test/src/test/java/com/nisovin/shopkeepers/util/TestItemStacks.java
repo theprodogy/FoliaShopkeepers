@@ -295,7 +295,7 @@ public class TestItemStacks {
 		potionMeta.setBasePotionType(PotionType.HEALING);
 		potionMeta.addCustomEffect(new PotionEffect(PotionEffectType.BLINDNESS, 2, 1, true, true, true), true);
 		potionMeta.setColor(Color.RED);
-		potionMeta.setCustomName("MyPotion");
+		potionMeta.setCustomPotionName("MyPotion");
 		// TODO SPIGOT-8103: Additional "unhandled" data, breaks the item comparison.
 		// potionMeta.setDurationScale(1.5f);
 		itemStack.setItemMeta(potionMeta);

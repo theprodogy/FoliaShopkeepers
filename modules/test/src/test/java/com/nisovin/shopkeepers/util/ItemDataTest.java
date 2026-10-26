@@ -120,39 +120,39 @@ public class ItemDataTest extends AbstractItemStackSerializationTest<@Nullable S
 				"item:" + yamlNewline()
 						+ "  id: minecraft:diamond_sword" + yamlNewline()
 						+ "  components:" + yamlNewline()
+						+ "    minecraft:max_stack_size: '65'" + yamlNewline()
+						+ "    minecraft:glider: '{}'" + yamlNewline()
 						+ "    minecraft:attribute_modifiers: '["
 						+ "{amount:2.0d,id:\"some_plugin:attack-speed-bonus\",operation:\"add_value\",slot:\"hand\",type:\"minecraft:attack_speed\"},"
 						+ "{amount:0.5d,id:\"some_plugin:attack-speed-bonus-2\",operation:\"add_multiplied_total\",slot:\"offhand\",type:\"minecraft:attack_speed\"},"
 						+ "{amount:2.0d,id:\"some_plugin:max-health-bonus\",operation:\"add_value\",slot:\"hand\",type:\"minecraft:max_health\"}]'" + yamlNewline()
-						+ "    minecraft:enchantments: '{\"minecraft:sharpness\":2,\"minecraft:unbreaking\":1}'" + yamlNewline()
-						+ "    minecraft:tool: '{damage_per_block:2,default_mining_speed:1.5f,rules:[{blocks:\"minecraft:stone\",correct_for_drops:1b,speed:0.5f}]}'" + yamlNewline()
-						+ "    minecraft:damage: '2'" + yamlNewline()
-						+ "    minecraft:tooltip_display: '{hidden_components:[\"minecraft:enchantments\"],hide_tooltip:1b}'" + yamlNewline()
-						+ "    minecraft:glider: '{}'" + yamlNewline()
-						+ "    minecraft:enchantment_glint_override: 1b" + yamlNewline()
-						+ "    minecraft:damage_resistant: '{types:\"#minecraft:is_explosion\"}'" + yamlNewline()
-						+ "    minecraft:repair_cost: '3'" + yamlNewline()
-						+ "    minecraft:use_cooldown: '{cooldown_group:\"plugin:cooldown\",seconds:1.5f}'" + yamlNewline()
-						+ "    minecraft:item_model: '\"plugin:item-model\"'" + yamlNewline()
+						+ "    minecraft:lore: '[{color:\"green\",text:\"lore1\"},\"lore2\"]'" + yamlNewline()
 						+ "    minecraft:unbreakable: '{}'" + yamlNewline()
+						+ "    minecraft:tooltip_style: '\"plugin:tooltip-style\"'" + yamlNewline()
 						+ "    minecraft:custom_name: '{color:\"red\",text:\"Custom Name\"}'" + yamlNewline()
 						+ "    minecraft:rarity: '\"epic\"'" + yamlNewline()
-						+ "    minecraft:max_damage: '10'" + yamlNewline()
-						+ "    minecraft:custom_model_data: '{floats:[1.0f]}'" + yamlNewline()
-						+ "    minecraft:enchantable: '{value:15}'" + yamlNewline()
+						+ "    minecraft:item_name: '{color:\"red\",text:\"Custom item name\"}'" + yamlNewline()
 						+ "    minecraft:equippable: '{allowed_entities:\"minecraft:player\","
 						+ "asset_id:\"minecraft:diamond_helmet\","
 						+ "camera_overlay:\"minecraft:carved_pumpkin\",damage_on_hurt:0b,"
 						+ "dispensable:0b,equip_on_interact:1b,"
 						+ "equip_sound:\"minecraft:item.armor.equip_chain\",slot:\"head\","
 						+ "swappable:0b}'" + yamlNewline()
-						+ "    minecraft:lore: '[{color:\"green\",text:\"lore1\"},\"lore2\"]'" + yamlNewline()
-						+ "    minecraft:max_stack_size: '65'" + yamlNewline()
-						+ "    minecraft:use_remainder: '{count:1,id:\"minecraft:bone\"}'" + yamlNewline()
-						+ "    minecraft:item_name: '{color:\"red\",text:\"Custom item name\"}'" + yamlNewline()
 						+ "    minecraft:food: '{can_always_eat:1b,nutrition:2,saturation:2.5f}'" + yamlNewline()
+						+ "    minecraft:item_model: '\"plugin:item-model\"'" + yamlNewline()
+						+ "    minecraft:use_remainder: '{id:\"minecraft:bone\"}'" + yamlNewline()
+						+ "    minecraft:repair_cost: '3'" + yamlNewline()
+						+ "    minecraft:max_damage: '10'" + yamlNewline()
+						+ "    minecraft:enchantment_glint_override: 1b" + yamlNewline()
+						+ "    minecraft:enchantable: '{value:15}'" + yamlNewline()
+						+ "    minecraft:use_cooldown: '{cooldown_group:\"plugin:cooldown\",seconds:1.5f}'" + yamlNewline()
+						+ "    minecraft:enchantments: '{\"minecraft:sharpness\":2,\"minecraft:unbreaking\":1}'" + yamlNewline()
+						+ "    minecraft:tooltip_display: '{hidden_components:[\"minecraft:enchantments\"],hide_tooltip:1b}'" + yamlNewline()
+						+ "    minecraft:custom_model_data: '{floats:[1.0f]}'" + yamlNewline()
 						+ "    minecraft:custom_data: '{PublicBukkitValues:{\"some_plugin:some-key\":\"some value\",\"some_plugin:some-other-key\":{\"inner_plugin:inner-key\":0.3f}}}'" + yamlNewline()
-						+ "    minecraft:tooltip_style: '\"plugin:tooltip-style\"'" + yamlNewline()
+						+ "    minecraft:damage_resistant: '{types:\"#minecraft:is_explosion\"}'" + yamlNewline()
+						+ "    minecraft:damage: '2'" + yamlNewline()
+						+ "    minecraft:tool: '{damage_per_block:2,default_mining_speed:1.5f,rules:[{blocks:\"minecraft:stone\",correct_for_drops:1b,speed:0.5f}]}'" + yamlNewline()
 		);
 	}
 

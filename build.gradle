@@ -258,6 +258,13 @@ subprojects {
 			dependsOn ecjAnalysis
 
 			systemProperty 'file.encoding', 'UTF-8'
+			// The Minecraft server libraries use native access and sun.misc.Unsafe:
+			jvmArgs '--enable-native-access=ALL-UNNAMED'
+			doFirst {
+				if (javaLauncher.get().metadata.languageVersion.asInt() >= 24) {
+					jvmArgs '--sun-misc-unsafe-memory-access=allow'
+				}
+			}
 			workingDir project.file("${project.buildDir}/test-work/")
 			// Gradle complains when this folder does not yet exist.
 			doFirst {

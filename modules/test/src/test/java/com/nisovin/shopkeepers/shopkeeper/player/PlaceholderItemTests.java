@@ -65,7 +65,7 @@ public class PlaceholderItemTests extends AbstractBukkitTest {
 		// Invalid materials:
 		testParsing(placeholderItem(Material.AIR.name()), null);
 		testParsing(placeholderItem(Material.FIRE.name()), null);
-		testParsing(placeholderItem(Material.LEGACY_APPLE.name()), null);
+		testParsing(placeholderItem("LEGACY_APPLE"), null);
 	}
 
 	@Test
