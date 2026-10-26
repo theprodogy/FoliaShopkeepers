@@ -41,6 +41,7 @@ import com.nisovin.shopkeepers.ui.lib.View;
 import com.nisovin.shopkeepers.util.annotations.ReadOnly;
 import com.nisovin.shopkeepers.util.bukkit.ConfigUtils;
 import com.nisovin.shopkeepers.util.bukkit.MerchantUtils;
+import com.nisovin.shopkeepers.util.bukkit.SchedulerUtils;
 import com.nisovin.shopkeepers.util.bukkit.TextUtils;
 import com.nisovin.shopkeepers.util.inventory.InventoryUtils;
 import com.nisovin.shopkeepers.util.inventory.ItemUtils;
@@ -266,7 +267,7 @@ public class TradingView extends View {
 		// This needs to happen after the event has been handled, because Minecraft will set the
 		// result slot afterwards:
 		SKUISession uiSession = SKShopkeepersPlugin.getInstance().getUIRegistry().getSession(player);
-		Bukkit.getScheduler().runTask(ShopkeepersPlugin.getInstance(), () -> {
+		SchedulerUtils.runTaskOrOmit(ShopkeepersPlugin.getInstance(), () -> {
 			if (!uiSession.isValid()) return;
 			if (clickEvent.isCancelled()) return;
 			// Logs if it encounters items that are not strictly matching and then clears the result

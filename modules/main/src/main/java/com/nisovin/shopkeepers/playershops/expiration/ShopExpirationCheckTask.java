@@ -10,7 +10,6 @@ import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitTask;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import com.nisovin.shopkeepers.SKShopkeepersPlugin;
@@ -18,9 +17,12 @@ import com.nisovin.shopkeepers.api.events.PlayerShopkeeperExpireEvent;
 import com.nisovin.shopkeepers.config.Settings;
 import com.nisovin.shopkeepers.config.Settings.DerivedSettings;
 import com.nisovin.shopkeepers.shopkeeper.player.AbstractPlayerShopkeeper;
+import com.nisovin.shopkeepers.util.bukkit.SchedulerUtils;
 import com.nisovin.shopkeepers.util.bukkit.Ticks;
 import com.nisovin.shopkeepers.util.java.Validate;
 import com.nisovin.shopkeepers.util.logging.Log;
+
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 
 /**
  * Periodically checks for expired player shops, handles their expiration, and notifies online shop
@@ -37,7 +39,7 @@ class ShopExpirationCheckTask implements Runnable {
 	private final SKShopkeepersPlugin plugin;
 	private final ShopExpirationNotifier notifier;
 
-	private @Nullable BukkitTask task = null;
+	private @Nullable ScheduledTask task = null;
 
 	ShopExpirationCheckTask(
 			SKShopkeepersPlugin plugin,
@@ -52,7 +54,7 @@ class ShopExpirationCheckTask implements Runnable {
 	void start() {
 		this.stop(); // Stop the task if it is already running
 
-		task = Bukkit.getScheduler().runTaskTimer(plugin, this, INTERVAL_TICKS, INTERVAL_TICKS);
+		task = SchedulerUtils.runTaskTimerOrOmit(plugin, this, INTERVAL_TICKS, INTERVAL_TICKS);
 	}
 
 	void stop() {

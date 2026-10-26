@@ -332,7 +332,7 @@ public class MannequinShop extends SKLivingShopObject<LivingEntity> {
 				return;
 			}
 
-			SchedulerUtils.runOnMainThreadOrOmit(plugin, () -> {
+			SchedulerUtils.runEntityTaskOrOmit(plugin, player, () -> {
 				this.updateProfile(player, preparedInput, updatedProfile);
 			});
 		});

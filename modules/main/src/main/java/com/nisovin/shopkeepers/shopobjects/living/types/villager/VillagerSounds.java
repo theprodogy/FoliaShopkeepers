@@ -3,7 +3,6 @@ package com.nisovin.shopkeepers.shopobjects.living.types.villager;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
@@ -13,7 +12,6 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.TradeSelectEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.MerchantInventory;
-import org.bukkit.scheduler.BukkitTask;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import com.nisovin.shopkeepers.SKShopkeepersPlugin;
@@ -31,12 +29,15 @@ import com.nisovin.shopkeepers.ui.trading.Trade;
 import com.nisovin.shopkeepers.ui.trading.TradingContext;
 import com.nisovin.shopkeepers.ui.trading.TradingListener;
 import com.nisovin.shopkeepers.util.bukkit.LocationUtils;
+import com.nisovin.shopkeepers.util.bukkit.SchedulerUtils;
 import com.nisovin.shopkeepers.util.bukkit.Ticks;
 import com.nisovin.shopkeepers.util.inventory.ItemUtils;
 import com.nisovin.shopkeepers.util.java.MathUtils;
 import com.nisovin.shopkeepers.util.java.TimeUtils;
 import com.nisovin.shopkeepers.util.java.Validate;
 import com.nisovin.shopkeepers.util.logging.Log;
+
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 
 /**
  * Mimics the ambient and trading sound effects of vanilla villagers.
@@ -66,7 +67,7 @@ public class VillagerSounds extends TradingListener {
 	private final LivingShopObject shopObject;
 
 	private long lastSoundNanos = System.nanoTime();
-	private @Nullable BukkitTask tradeInteractionTask = null;
+	private @Nullable ScheduledTask tradeInteractionTask = null;
 
 	public VillagerSounds(SKLivingShopObject<? extends AbstractVillager> shopObject) {
 		Validate.notNull(shopObject, "shopObject is null");
@@ -232,8 +233,9 @@ public class VillagerSounds extends TradingListener {
 			// We are already about to process another inventory interaction.
 			return;
 		}
-		tradeInteractionTask = Bukkit.getScheduler().runTask(
+		tradeInteractionTask = SchedulerUtils.runEntityTaskOrOmit(
 				SKShopkeepersPlugin.getInstance(),
+				uiSession.getPlayer(),
 				new ProcessTradeInteractionTask(uiSession)
 		);
 	}

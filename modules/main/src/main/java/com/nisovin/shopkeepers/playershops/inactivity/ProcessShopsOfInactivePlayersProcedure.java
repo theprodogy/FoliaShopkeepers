@@ -10,7 +10,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import com.nisovin.shopkeepers.SKShopkeepersPlugin;
@@ -108,23 +107,20 @@ class ProcessShopsOfInactivePlayersProcedure {
 
 	private void asyncCheckInactivityOfAllShopOwnersAndContinue() {
 		// We retrieve the OfflinePlayers and their 'last played' times asynchronously:
-		new BukkitRunnable() {
-			@Override
-			public void run() {
-				// Set up the data for all inactive shop owners, and remove all shop owners that are
-				// not inactive:
-				setUpInactiveShopOwners();
+		SchedulerUtils.runAsyncTaskLaterOrOmit(plugin, task -> {
+			// Set up the data for all inactive shop owners, and remove all shop owners that are
+			// not inactive:
+			setUpInactiveShopOwners();
 
-				// Abort if no inactive players were found:
-				if (inactivePlayers.isEmpty()) return;
+			// Abort if no inactive players were found:
+			if (inactivePlayers.isEmpty()) return;
 
-				// Abort if the task has been cancelled in the meantime (e.g. if the plugin has been
-				// disabled or reloaded):
-				if (this.isCancelled()) return;
+			// Abort if the task has been cancelled in the meantime (e.g. if the plugin has been
+			// disabled or reloaded):
+			if (task.isCancelled()) return;
 
-				SchedulerUtils.runTaskOrOmit(plugin, () -> continueWithInactiveShopOwners());
-			}
-		}.runTaskAsynchronously(plugin);
+			SchedulerUtils.runTaskOrOmit(plugin, () -> continueWithInactiveShopOwners());
+		}, 0L);
 	}
 
 	// This may be called asynchronously.

@@ -3,7 +3,6 @@ package com.nisovin.shopkeepers.commands.shopkeepers;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import com.nisovin.shopkeepers.SKShopkeepersPlugin;
 import com.nisovin.shopkeepers.api.ShopkeepersPlugin;
@@ -86,46 +85,44 @@ class CommandTestDamage extends PlayerCommand {
 				+ "&a, Per tick: &e" + timesPerTick + "&a, Duration &e" + durationTicks
 				+ " ticks &a..."));
 
-		new BukkitRunnable() {
-
-			private int tickCounter = 0;
-
-			@Override
-			public void run() {
-				boolean playerValid = player.isValid();
-				if (tickCounter >= durationTicks || !playerValid || !target.isValid()) {
-					// We are done:
-					if (playerValid) {
-						player.sendMessage(ChatColor.GREEN + "... Done");
-					}
-					this.cancel();
-					return;
+		// Runs on the region that owns the target entity:
+		int[] tickCounterHolder = new int[] { 0 };
+		target.getScheduler().runAtFixedRate(plugin, task -> {
+			int tickCounter = tickCounterHolder[0];
+			boolean playerValid = player.isValid();
+			if (tickCounter >= durationTicks || !playerValid || !target.isValid()) {
+				// We are done:
+				if (playerValid) {
+					player.sendMessage(ChatColor.GREEN + "... Done");
 				}
+				task.cancel();
+				return;
+			}
 
-				// Apply damage:
-				for (int i = 0; i < timesPerTick; ++i) {
-					// Reset damage cooldown:
-					target.setNoDamageTicks(0);
-					target.setLastDamage(0.0D);
+			// Apply damage:
+			for (int i = 0; i < timesPerTick; ++i) {
+				// Reset damage cooldown:
+				target.setNoDamageTicks(0);
+				target.setLastDamage(0.0D);
 
-					// Damage:
-					target.damage(damage, player);
+				// Damage:
+				target.damage(damage, player);
 
-					// Abort if the entity died:
-					if (target.isDead()) {
-						break;
-					}
-				}
-
-				tickCounter += 1;
-
-				// Periodic progress feedback:
-				if ((tickCounter % 20) == 0) {
-					player.sendMessage(ChatColor.GRAY + "... (" + ChatColor.YELLOW + tickCounter
-							+ ChatColor.GRAY + " / " + ChatColor.YELLOW + durationTicks
-							+ ChatColor.GRAY + ")");
+				// Abort if the entity died:
+				if (target.isDead()) {
+					break;
 				}
 			}
-		}.runTaskTimer(plugin, 1L, 1L);
+
+			tickCounter += 1;
+			tickCounterHolder[0] = tickCounter;
+
+			// Periodic progress feedback:
+			if ((tickCounter % 20) == 0) {
+				player.sendMessage(ChatColor.GRAY + "... (" + ChatColor.YELLOW + tickCounter
+						+ ChatColor.GRAY + " / " + ChatColor.YELLOW + durationTicks
+						+ ChatColor.GRAY + ")");
+			}
+		}, null, 1L, 1L);
 	}
 }

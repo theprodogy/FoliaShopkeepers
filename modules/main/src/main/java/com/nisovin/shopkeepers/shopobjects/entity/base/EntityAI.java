@@ -21,7 +21,6 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
-import org.bukkit.scheduler.BukkitTask;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import com.nisovin.shopkeepers.SKShopkeepersPlugin;
@@ -31,12 +30,15 @@ import com.nisovin.shopkeepers.compat.Compat;
 import com.nisovin.shopkeepers.config.Settings;
 import com.nisovin.shopkeepers.util.bukkit.EntityUtils;
 import com.nisovin.shopkeepers.util.bukkit.MutableChunkCoords;
+import com.nisovin.shopkeepers.util.bukkit.SchedulerUtils;
 import com.nisovin.shopkeepers.util.bukkit.WorldUtils;
 import com.nisovin.shopkeepers.util.java.CyclicCounter;
 import com.nisovin.shopkeepers.util.java.RateLimiter;
 import com.nisovin.shopkeepers.util.java.Validate;
 import com.nisovin.shopkeepers.util.timer.Timer;
 import com.nisovin.shopkeepers.util.timer.Timings;
+
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 
 /**
  * Handles the gravity and AI behavior, e.g. looking at nearby players, of
@@ -189,7 +191,7 @@ public class EntityAI implements Listener {
 	// Index for fast removal: Shop object -> EntityData
 	private final Map<BaseEntityShopObject<?>, EntityData> shopObjects = new HashMap<>();
 
-	private @Nullable BukkitTask aiTask = null;
+	private @Nullable ScheduledTask aiTask = null;
 	private boolean currentlyRunning = false;
 
 	// Statistics:
@@ -380,7 +382,7 @@ public class EntityAI implements Listener {
 
 		// Start AI task:
 		int tickPeriod = Settings.entityBehaviorTickPeriod;
-		aiTask = Bukkit.getScheduler().runTaskTimer(
+		aiTask = SchedulerUtils.runTaskTimerOrOmit(
 				plugin,
 				new TickTask(),
 				tickPeriod,
@@ -493,7 +495,7 @@ public class EntityAI implements Listener {
 
 	private void activateNearbyChunksDelayed(Player player) {
 		if (!player.isOnline()) return; // Player is no longer online
-		Bukkit.getScheduler().runTask(plugin, new ActivateNearbyChunksDelayedTask(player));
+		SchedulerUtils.runEntityTaskOrOmit(plugin, player, new ActivateNearbyChunksDelayedTask(player));
 	}
 
 	private class ActivateNearbyChunksDelayedTask implements Runnable {

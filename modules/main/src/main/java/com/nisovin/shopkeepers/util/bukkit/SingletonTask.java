@@ -4,11 +4,12 @@ import java.util.concurrent.TimeUnit;
 
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitTask;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import com.nisovin.shopkeepers.api.internal.util.Unsafe;
 import com.nisovin.shopkeepers.util.java.Validate;
+
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 
 /**
  * Represents a task that is triggered from the server's main thread and of which only one execution
@@ -66,7 +67,7 @@ public abstract class SingletonTask {
 
 	private State state = State.NOT_RUNNING;
 	// The Bukkit task asynchronously executing this task. Only relevant for async executions.
-	private @Nullable BukkitTask asyncTask = null;
+	private @Nullable ScheduledTask asyncTask = null;
 	// The (internal) callbacks of the current execution:
 	// Run immediately, possibly asynchronously:
 	private @Nullable Runnable internalCallback = null;
@@ -377,14 +378,17 @@ public abstract class SingletonTask {
 	 */
 	public abstract class InternalAsyncTask implements Runnable {
 
-		private @Nullable BukkitTask task; // Captured Bukkit task
+		private @Nullable ScheduledTask task; // Captured Bukkit task
 
 		protected InternalAsyncTask() {
 		}
 
-		private BukkitTask runTaskAsynchronously() {
-			this.task = Bukkit.getScheduler().runTaskAsynchronously(plugin, this);
-			return task;
+		private ScheduledTask runTaskAsynchronously() {
+			// The task may start before the scheduler returns: We capture it inside the task.
+			return Unsafe.assertNonNull(SchedulerUtils.runAsyncTaskLaterOrOmit(plugin, scheduledTask -> {
+				this.task = scheduledTask;
+				this.run();
+			}, 0L));
 		}
 
 		@Override
@@ -460,7 +464,7 @@ public abstract class SingletonTask {
 	// asyncTask: The async task executing this method. Null for sync executions.
 	// If the async task got cancelled and another execution has already been started, this may not
 	// match the current value of this class' asyncTask variable.
-	private void executeTask(@Nullable BukkitTask asyncTask) {
+	private void executeTask(@Nullable ScheduledTask asyncTask) {
 		if (asyncTask != null) {
 			// Asynchronous execution:
 			// Requires the lock for coordination with the main thread, and might have been
