@@ -57,6 +57,7 @@ import com.nisovin.shopkeepers.container.SKShopContainerTypeRegistry;
 import com.nisovin.shopkeepers.shopkeeper.player.members.SKDefaultPlayerShopAccessLevels;
 import com.nisovin.shopkeepers.shopkeeper.player.members.SKPlayerShopAccessLevelRegistry;
 import com.nisovin.shopkeepers.shopkeeper.registry.SKShopkeeperRegistry;
+import com.nisovin.shopkeepers.shopkeeper.visibility.ShopkeeperViewDistance;
 import com.nisovin.shopkeepers.shopobjects.SKDefaultShopObjectTypes;
 import com.nisovin.shopkeepers.shopobjects.SKShopObjectTypesRegistry;
 import com.nisovin.shopkeepers.shopobjects.block.base.BaseBlockShops;
@@ -151,6 +152,9 @@ public class SKShopkeepersPlugin extends JavaPlugin implements InternalShopkeepe
 			Unsafe.initialized(this)
 	);
 	private final EventDebugger eventDebugger = new EventDebugger(Unsafe.initialized(this));
+	private final ShopkeeperViewDistance shopkeeperViewDistance = new ShopkeeperViewDistance(
+			Unsafe.initialized(this)
+	);
 
 	private final PlayerShops playerShops = new PlayerShops(Unsafe.initialized(this));
 
@@ -490,6 +494,8 @@ public class SKShopkeepersPlugin extends JavaPlugin implements InternalShopkeepe
 
 		// Event debugger:
 		eventDebugger.onEnable();
+
+		shopkeeperViewDistance.onEnable();
 	}
 
 	@Override
@@ -572,6 +578,7 @@ public class SKShopkeepersPlugin extends JavaPlugin implements InternalShopkeepe
 
 		// Event debugger:
 		eventDebugger.onDisable();
+		shopkeeperViewDistance.onDisable();
 
 		// Paper compat module:
 		if (PaperCompat.hasProvider()) {

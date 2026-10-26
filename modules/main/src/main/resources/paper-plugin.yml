@@ -160,6 +160,9 @@ permissions:
     shopkeeper.edit-wandering-traders:
         description: Edit regular wandering traders
         default: op
+    shopkeeper.admin.commands:
+        description: Use the /shopkeepersadmin commands
+        default: op
 
     # General permissions
     shopkeeper.trade:
@@ -277,6 +280,7 @@ permissions:
             shopkeeper.snapshot: true
             shopkeeper.edit-villagers: true
             shopkeeper.edit-wandering-traders: true
+            shopkeeper.admin.commands: true
             shopkeeper.trade: true
             shopkeeper.hire: true
             shopkeeper.create: true

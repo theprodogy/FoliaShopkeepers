@@ -39,6 +39,12 @@ public abstract class BaseCommand extends Command implements BasicCommand {
 
 	@Override
 	public Collection<String> suggest(CommandSourceStack source, @NonNull String[] args) {
+		// Paper passes no arguments if nothing has been typed after the command yet: We complete an
+		// empty argument in that case, so that the child commands are suggested.
+		if (args.length == 0) {
+			args = new @NonNull String[] { "" };
+		}
+
 		CommandInput input = new CommandInput(source.getSender(), this, this.getName(), args);
 		return Unsafe.cast(this.handleTabCompletion(input));
 	}

@@ -417,6 +417,13 @@ disable-gravity: false
 # player.
 gravity-chunk-range: 4
 
+# The distance in blocks up to which players can see shopkeeper entities.
+# -1 means no limit (ALWAYS_VISIBLE). Can also be changed in-game via
+# '/shopkeepersadmin viewdistance'.
+# The server's entity tracking range still limits how far entities are visible,
+# so this can only reduce the visible distance.
+shopkeeper-view-distance: -1
+
 # The number of Minecraft ticks between behavior updates of shopkeeper
 # entities.
 # This controls the rate at which we update the gravity and AI of shopkeeper
