@@ -1,20 +1,16 @@
 rootProject.name = 'shopkeepers'
 
 // Project name -> folder inside 'modules/'.
-// Version modules live in 'versions/<Minecraft version>/<spigot|paper>'. Their project names
+// Version modules live in 'versions/<Minecraft version>/paper'. Their project names
 // match the compat version ids and Java packages, which are resolved by name at runtime.
 def subprojects = [
 	'external-annotations': 'external-annotations',
 	'api': 'api',
 	'main': 'main',
 	'paper': 'paper',
-	'v1_21_R9': 'versions/1.21.11/spigot',
 	'v1_21_R9_paper': 'versions/1.21.11/paper',
-	'v26_1_R1': 'versions/26.1.2/spigot',
 	'v26_1_R1_paper': 'versions/26.1.2/paper',
-	'v26_2_R1': 'versions/26.2/spigot',
 	'v26_2_R1_paper': 'versions/26.2/paper',
-	'v26_3_R1': 'versions/26.3/spigot',
 	'v26_3_R1_paper': 'versions/26.3/paper',
 	'test': 'test',
 	'dist': 'dist'

@@ -46,18 +46,12 @@ public final class Compat {
 	// Minecraft version instead.
 	static {
 		// Registered in the order from latest to oldest.
-		// 26.2: The Spigot mappings version has not changed.
 		register(new CompatVersion("26_3_R1_paper", "26.3", "26.3"));
-		register(new CompatVersion("26_3_R1", "26.3", "e8ece90188c951d866bd2fffc52c803e"));
-		// 26.2: The Spigot mappings version has not changed. New compat module for SulfurCube
-		// functionality.
+		// 26.2: New compat module for SulfurCube functionality.
 		register(new CompatVersion("26_2_R1_paper", "26.2", "26.2"));
-		register(new CompatVersion("26_2_R1", "26.2", "e8ece90188c951d866bd2fffc52c803e"));
 		register(new CompatVersion("26_1_R1_paper", "26.1.2", "26.1.2"));
-		register(new CompatVersion("26_1_R1", "26.1.2", "e8ece90188c951d866bd2fffc52c803e"));
 		// 26.1 and 26.1.1: Not supported. Superseded by 26.1.2.
 		register(new CompatVersion("1_21_R9_paper", "1.21.11", "1.21.11"));
-		register(new CompatVersion("1_21_R9", "1.21.11", "e3cd927e07e6ff434793a0474c51b2b9"));
 		register(new CompatVersion(
 				FallbackCompatProvider.VERSION_ID,
 				FallbackCompatProvider.VERSION_ID,

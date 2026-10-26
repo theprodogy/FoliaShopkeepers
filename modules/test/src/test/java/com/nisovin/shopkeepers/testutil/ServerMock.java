@@ -1,29 +1,26 @@
 package com.nisovin.shopkeepers.testutil;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Keyed;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.Registry;
 import org.bukkit.Server;
 import org.bukkit.Tag;
-import org.bukkit.craftbukkit.v1_21_R4.CraftRegistry;
-import org.bukkit.craftbukkit.v1_21_R4.block.data.CraftBlockData;
-import org.bukkit.craftbukkit.v1_21_R4.inventory.CraftInventoryCustom;
-import org.bukkit.craftbukkit.v1_21_R4.inventory.CraftItemFactory;
-import org.bukkit.craftbukkit.v1_21_R4.tag.CraftBlockTag;
-import org.bukkit.craftbukkit.v1_21_R4.tag.CraftDamageTag;
-import org.bukkit.craftbukkit.v1_21_R4.tag.CraftEntityTag;
-import org.bukkit.craftbukkit.v1_21_R4.tag.CraftFluidTag;
-import org.bukkit.craftbukkit.v1_21_R4.tag.CraftItemTag;
-import org.bukkit.craftbukkit.v1_21_R4.util.CraftMagicNumbers;
-import org.bukkit.craftbukkit.v1_21_R4.util.CraftNamespacedKey;
-import org.bukkit.craftbukkit.v1_21_R4.util.Versioning;
+import org.bukkit.craftbukkit.CraftRegistry;
+import org.bukkit.craftbukkit.block.data.CraftBlockData;
+import org.bukkit.craftbukkit.inventory.CraftInventoryCustom;
+import org.bukkit.craftbukkit.inventory.CraftItemFactory;
+import org.bukkit.craftbukkit.tag.CraftBlockTag;
+import org.bukkit.craftbukkit.tag.CraftDamageTag;
+import org.bukkit.craftbukkit.tag.CraftEntityTag;
+import org.bukkit.craftbukkit.tag.CraftFluidTag;
+import org.bukkit.craftbukkit.tag.CraftItemTag;
+import org.bukkit.craftbukkit.util.CraftMagicNumbers;
+import org.bukkit.craftbukkit.util.CraftNamespacedKey;
+import org.bukkit.craftbukkit.util.Versioning;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.tag.DamageTypeTags;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -32,28 +29,36 @@ import com.nisovin.shopkeepers.api.internal.util.Unsafe;
 import com.nisovin.shopkeepers.util.java.Validate;
 
 import net.minecraft.SharedConstants;
+import net.minecraft.commands.Commands;
 import net.minecraft.core.HolderLookup.RegistryLookup;
 import net.minecraft.core.LayeredRegistryAccess;
 import net.minecraft.core.Registry.PendingTags;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryDataLoader;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.Bootstrap;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.RegistryLayer;
+import net.minecraft.server.ReloadableServerResources;
 import net.minecraft.server.packs.PackType;
-import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.packs.repository.ServerPacksSource;
 import net.minecraft.server.packs.resources.MultiPackResourceManager;
+import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.tags.TagKey;
 import net.minecraft.tags.TagLoader;
+import net.minecraft.util.Util;
+import net.minecraft.world.flag.FeatureFlagSet;
+import net.minecraft.world.flag.FeatureFlags;
+import net.minecraft.world.level.DataPackConfig;
+import net.minecraft.world.level.WorldDataConfiguration;
 
 /**
  * Mocks the Server (at least the functions required for our tests).
  * <p>
- * Adopted from CraftBukkit: See AbstractTestingBase and DummyServer.
+ * Adopted from Paper: See RegistryHelper and DummyServerHelper.
  */
 class ServerMock extends ProxyHandler<Server> {
 
@@ -64,31 +69,71 @@ class ServerMock extends ProxyHandler<Server> {
 		SharedConstants.tryDetectVersion();
 		Bootstrap.bootStrap();
 		// Populate available packs:
+		FeatureFlagSet enabledFeatures = FeatureFlags.REGISTRY.allFlags();
 		PackRepository packRepository = ServerPacksSource.createVanillaTrustedRepository();
-		packRepository.reload();
+		MinecraftServer.configurePackRepository(
+				packRepository,
+				new WorldDataConfiguration(
+						new DataPackConfig(
+								FeatureFlags.REGISTRY.toNames(enabledFeatures).stream()
+										.map(Identifier::getPath)
+										.toList(),
+								List.of()
+						),
+						enabledFeatures
+				),
+				true,
+				false
+		);
 		// Set up resource manager:
 		MultiPackResourceManager resourceManager = new MultiPackResourceManager(
 				PackType.SERVER_DATA,
-				packRepository.getAvailablePacks().stream().map(Pack::open).toList()
+				packRepository.openAllSelected()
 		);
 		LayeredRegistryAccess<RegistryLayer> layers = Unsafe.castNonNull(RegistryLayer.createRegistryAccess());
 		List<PendingTags<?>> tags = Unsafe.castNonNull(TagLoader.loadTagsForExistingRegistries(
 				resourceManager,
 				layers.getLayer(RegistryLayer.STATIC)
 		));
-		RegistryAccess.Frozen worldgenAccess = layers.getAccessForLoading(RegistryLayer.WORLDGEN);
+		RegistryAccess.Frozen worldAccess = layers.getAccessForLoading(RegistryLayer.WORLD);
 		List<RegistryLookup<?>> lookups = Unsafe.castNonNull(
-				TagLoader.buildUpdatedLookups(worldgenAccess, Unsafe.castNonNull(tags))
+				TagLoader.buildUpdatedLookups(worldAccess, Unsafe.castNonNull(tags))
 		);
-		RegistryAccess.Frozen loadedWorldgen = RegistryDataLoader.load(
+		RegistryAccess.Frozen loadedWorld = RegistryDataLoader.load(
 				resourceManager,
 				Unsafe.castNonNull(lookups),
-				RegistryDataLoader.WORLDGEN_REGISTRIES
-		);
+				RegistryDataLoader.WORLD_REGISTRIES,
+				Util.backgroundExecutor()
+		).join();
+		layers = Unsafe.castNonNull(layers.replaceFrom(RegistryLayer.WORLD, loadedWorld));
+
+		List<RegistryLookup<?>> worldLookups = Stream.concat(
+				lookups.stream(),
+				loadedWorld.listRegistries()
+		).toList();
+		RegistryAccess.Frozen loadedDimensions = RegistryDataLoader.load(
+				resourceManager,
+				Unsafe.castNonNull(worldLookups),
+				RegistryDataLoader.DIMENSION_REGISTRIES,
+				Util.backgroundExecutor()
+		).join();
 		layers = Unsafe.castNonNull(
-				layers.replaceFrom(RegistryLayer.WORLDGEN, loadedWorldgen)
+				layers.replaceFrom(RegistryLayer.DIMENSIONS, loadedDimensions)
 		);
 		REGISTRY_CUSTOM = Unsafe.castNonNull(layers.compositeAccess().freeze());
+
+		// Bind the data components and tags:
+		ReloadableServerResources datapack = ReloadableServerResources.loadResources(
+				resourceManager,
+				layers,
+				Unsafe.castNonNull(tags),
+				enabledFeatures,
+				Commands.CommandSelection.DEDICATED,
+				LevelBasedPermissionSet.ALL_PERMISSIONS,
+				Util.backgroundExecutor(),
+				Runnable::run
+		).join();
+		datapack.updateComponentsAndStaticRegistryTags();
 
 		// Set up the server mock as Bukkit API provider:
 		Server serverMock = new ServerMock().newProxy();
@@ -101,8 +146,6 @@ class ServerMock extends ProxyHandler<Server> {
 	public static void setup() {
 	}
 
-	private final Map<Class<?>, Registry<?>> registers = new HashMap<>();
-
 	private ServerMock() {
 		super(Server.class);
 	}
@@ -111,15 +154,6 @@ class ServerMock extends ProxyHandler<Server> {
 	protected void setupMethodHandlers() throws Exception {
 		this.addHandler(Server.class.getMethod("getItemFactory"), (proxy, args) -> {
 			return Unsafe.assertNonNull(CraftItemFactory.instance());
-		});
-
-		this.addHandler(Server.class.getMethod("getRegistry", Class.class), (proxy, args) -> {
-			assert args != null;
-			Class<? extends Keyed> clazz = Unsafe.castNonNull(args[0]);
-			return registers.computeIfAbsent(
-					clazz,
-					key -> CraftRegistry.createRegistry(clazz, REGISTRY_CUSTOM)
-			);
 		});
 
 		this.addHandler(Server.class.getMethod("getName"), (proxy, args) -> {
@@ -150,7 +184,7 @@ class ServerMock extends ProxyHandler<Server> {
 					Validate.notNull(args, "args is null");
 					assert args != null;
 					Material material = Unsafe.castNonNull(args[0]);
-					return CraftBlockData.newData(material.asBlockType(), Unsafe.uncheckedNull());
+					return CraftBlockData.fromString(material.asBlockType(), Unsafe.uncheckedNull());
 				}
 		);
 
@@ -171,7 +205,7 @@ class ServerMock extends ProxyHandler<Server> {
 			NamespacedKey bukkitKey = Unsafe.castNonNull(args[1]);
 			Class<?> clazz = Unsafe.castNonNull(args[2]);
 
-			ResourceLocation key = CraftNamespacedKey.toMinecraft(bukkitKey);
+			Identifier key = CraftNamespacedKey.toMinecraft(bukkitKey);
 
 			switch (registry) {
 			case Tag.REGISTRY_BLOCKS -> {

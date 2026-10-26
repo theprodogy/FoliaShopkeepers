@@ -117,15 +117,13 @@ public final class CompatProviderImpl implements CompatProvider {
 		}
 	}
 
-	private final CopperChestProtectionListener copperChestProtectionListener;
+	private @Nullable CopperChestProtectionListener copperChestProtectionListener;
 
 	private final TagParser<Tag> tagParser = Unsafe.castNonNull(TagParser.create(NbtOps.INSTANCE));
 
 	private final Field craftItemStackHandleField;
 
 	public CompatProviderImpl() throws Exception {
-		var plugin = SKShopkeepersPlugin.getInstance();
-		copperChestProtectionListener = new CopperChestProtectionListener(plugin);
 		craftItemStackHandleField = CraftItemStack.class.getDeclaredField("handle");
 		craftItemStackHandleField.setAccessible(true);
 	}
@@ -140,13 +138,18 @@ public final class CompatProviderImpl implements CompatProvider {
 		var plugin = SKShopkeepersPlugin.getInstance();
 
 		if (Settings.protectContainers && Settings.preventCopperGolemAccess) {
-			Bukkit.getPluginManager().registerEvents(copperChestProtectionListener, plugin);
+			var listener = new CopperChestProtectionListener(plugin);
+			copperChestProtectionListener = listener;
+			Bukkit.getPluginManager().registerEvents(listener, plugin);
 		}
 	}
 
 	@Override
 	public void onDisable() {
-		HandlerList.unregisterAll(copperChestProtectionListener);
+		if (copperChestProtectionListener != null) {
+			HandlerList.unregisterAll(copperChestProtectionListener);
+			copperChestProtectionListener = null;
+		}
 	}
 
 	public Class<?> getCraftMagicNumbersClass() {

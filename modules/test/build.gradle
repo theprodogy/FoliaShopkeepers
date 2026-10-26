@@ -2,21 +2,16 @@ plugins {
 	id 'java-library'
 	id 'org.checkerframework'
 	id 'eclipse'
+	id 'io.papermc.paperweight.userdev'
 }
 
 dependencies {
 	testImplementation project(':shopkeepers-main')
-	testImplementation project(path: ':shopkeepers-v1_21_R9')
-	testImplementation libs.spigot.api
+	testImplementation project(path: ':shopkeepers-v26_3_R1_paper')
+	// Includes the Paper API and server:
+	paperweight.paperDevBundle('26.3.build.+')
 	testImplementation libs.junit
 	testImplementation libs.hamcrest
-	(testImplementation libs.craftbukkit) {
-		artifact {
-			classifier = 'remapped-mojang'
-		}
-		// Already included in craftbukkit. Avoids accidentally using the wrong (non-remapped) type.
-		exclude group: 'org.spigotmc', module: 'minecraft-server'
-	}
 }
 
 // Note: There is no need to remap the test classes to run them.
@@ -28,3 +23,11 @@ jar {
 	// No output artifacts required.
 	enabled = false
 }
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(25)
+	}
+}
+
+java.disableAutoTargetJvm()

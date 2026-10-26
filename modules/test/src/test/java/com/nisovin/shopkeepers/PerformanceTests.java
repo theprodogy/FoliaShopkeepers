@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.v1_21_R4.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.junit.Test;
@@ -97,7 +97,7 @@ public class PerformanceTests extends AbstractBukkitTest {
 				itemStack::clone
 		);
 
-		CraftItemStack craftItemStack = CraftItemStack.asCraftCopy(itemStack);
+		CraftItemStack craftItemStack = CraftItemStack.getCraftStack(itemStack.clone());
 		testPerformance(
 				"  ",
 				"CraftItemStack#clone()",
@@ -114,7 +114,7 @@ public class PerformanceTests extends AbstractBukkitTest {
 		int testCount = 1000000;
 		ItemStack itemStack = TestItemStacks.createItemStackComplete();
 		ItemStack itemStackCopy = itemStack.clone();
-		CraftItemStack craftItemStack = CraftItemStack.asCraftCopy(itemStack);
+		CraftItemStack craftItemStack = CraftItemStack.getCraftStack(itemStack.clone());
 		CraftItemStack craftItemStackCopy = craftItemStack.clone();
 
 		testPerformance(
@@ -169,7 +169,7 @@ public class PerformanceTests extends AbstractBukkitTest {
 		ItemMeta itemMeta = Unsafe.assertNonNull(itemStack.getItemMeta());
 		String displayName = itemMeta.getDisplayName();
 		List<? extends String> lore = Unsafe.castNonNull(itemMeta.getLore());
-		CraftItemStack craftItemStack = CraftItemStack.asCraftCopy(itemStack);
+		CraftItemStack craftItemStack = CraftItemStack.getCraftStack(itemStack.clone());
 		var componentsPatch = CraftItemStack.asNMSCopy(itemStack).getComponentsPatch();
 		var componentsPatchCopy = CraftItemStack.asNMSCopy(itemStack).getComponentsPatch();
 		var componentPredicate = DataComponentExactPredicate.allOf(PatchedDataComponentMap.fromPatch(
@@ -288,8 +288,8 @@ public class PerformanceTests extends AbstractBukkitTest {
 
 		ItemStack fullItemStack = TestItemStacks.createItemStackComplete();
 		ItemStack basicItemStack = TestItemStacks.createItemStackBasic();
-		CraftItemStack fullCraftItemStack = CraftItemStack.asCraftCopy(fullItemStack);
-		CraftItemStack basicCraftItemStack = CraftItemStack.asCraftCopy(basicItemStack);
+		CraftItemStack fullCraftItemStack = CraftItemStack.getCraftStack(fullItemStack.clone());
+		CraftItemStack basicCraftItemStack = CraftItemStack.getCraftStack(basicItemStack.clone());
 
 		// In order to avoid that the compiler optimizes these operations away, we increment this
 		// value during the
