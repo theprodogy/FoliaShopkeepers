@@ -231,7 +231,12 @@ subprojects {
 		// Configure all JavaCompile tasks (compileJava, compileTestJava, etc):
 		tasks.withType(JavaCompile) {
 			options.encoding = 'UTF-8'
-			//options.compilerArgs += ['-Xmaxerrs', '10000', '-Xmaxwarns', '10000']
+			// All lints except: Deprecations (pending migration to Adventure), this-escape (style
+			// only) and classfile (missing annotation classes of dependencies). ECJ uses its own
+			// settings.
+			if (name != 'ecjAnalysis') {
+				options.compilerArgs += ['-Xlint:all,-deprecation,-this-escape,-classfile']
+			}
 		}
 
 		processResources {

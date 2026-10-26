@@ -51,7 +51,7 @@ public class ShopObjectData extends DelegateDataContainer {
 		return Unsafe.assertNonNull(of(dataContainer));
 	}
 
-	/////
+	// ---
 
 	/**
 	 * Creates a new {@link ShopObjectData}.

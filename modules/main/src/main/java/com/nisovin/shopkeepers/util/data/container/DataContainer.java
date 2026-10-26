@@ -153,7 +153,7 @@ public interface DataContainer {
 				|| dataSource instanceof DataContainer;
 	}
 
-	/////
+	// ---
 
 	/**
 	 * Checks if this data container stores a value for the given key.

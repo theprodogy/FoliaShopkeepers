@@ -47,7 +47,7 @@ public interface DataValue {
 		return new SimpleDataValue(value);
 	}
 
-	/////
+	// ---
 
 	/**
 	 * Checks if the value is present.

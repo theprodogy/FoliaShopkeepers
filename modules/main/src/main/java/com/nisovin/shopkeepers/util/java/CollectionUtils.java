@@ -70,6 +70,7 @@ public final class CollectionUtils {
 	 *         <code>null</code>
 	 */
 	@SafeVarargs
+	@SuppressWarnings("varargs") // The list only exposes the array's elements.
 	public static <E> List<E> asList(E @Nullable... array) {
 		return (array == null) ? Collections.emptyList() : Arrays.asList(array);
 	}
@@ -267,6 +268,7 @@ public final class CollectionUtils {
 
 	// Note: Does not work for primitive arrays.
 	@SafeVarargs
+	@SuppressWarnings("varargs") // Callers only read the returned array.
 	public static <T> T @Nullable [] concat(T @Nullable [] array1, T @Nullable... array2) {
 		if (array1 == null) return array2;
 		if (array2 == null) return array1;

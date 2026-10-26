@@ -665,7 +665,7 @@ public abstract class SingletonTask {
 		return sb.toString();
 	}
 
-	/////
+	// ---
 
 	/**
 	 * This is run on the main thread to prepare a new task execution.

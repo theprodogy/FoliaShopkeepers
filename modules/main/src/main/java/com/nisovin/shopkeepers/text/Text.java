@@ -303,7 +303,7 @@ public interface Text {
 		return (insertion == null || insertion.isEmpty()) ? text("") : new InsertionText(insertion);
 	}
 
-	/////
+	// ---
 
 	// PARENT
 

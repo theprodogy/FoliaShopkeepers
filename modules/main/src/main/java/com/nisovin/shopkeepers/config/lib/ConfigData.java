@@ -63,7 +63,7 @@ public interface ConfigData extends DataContainer {
 		return of(DataContainer.ofNonNull(dataSource));
 	}
 
-	/////
+	// ---
 
 	/**
 	 * Gets the default values for this configuration data.

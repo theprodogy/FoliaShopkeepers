@@ -647,7 +647,7 @@ public final class StringUtils {
 		// The argument to replace the current key:
 		protected @Nullable Object resolveArgument(String key) {
 			Object argument = Unsafe.assertNonNull(arguments).get(key);
-			if (argument instanceof Supplier supplier) {
+			if (argument instanceof Supplier<?> supplier) {
 				argument = supplier.get(); // Can be null
 			}
 

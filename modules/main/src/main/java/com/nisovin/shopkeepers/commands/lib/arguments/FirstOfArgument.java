@@ -279,7 +279,7 @@ public class FirstOfArgument
 
 		private static final long serialVersionUID = -1177782345537954263L;
 
-		private final List<? extends FallbackArgumentException> originalFallbacks;
+		private final transient List<? extends FallbackArgumentException> originalFallbacks;
 
 		public FirstOfFallbackException(
 				FirstOfArgument firstOfArgument,

@@ -9,7 +9,7 @@ public class ValueLoadException extends Exception {
 
 	private static final long serialVersionUID = -3068903999888105245L;
 
-	private final List<? extends String> extraMessages;
+	private final transient List<? extends String> extraMessages;
 
 	public ValueLoadException(@Nullable String message) {
 		this(message, null, null);

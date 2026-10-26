@@ -388,6 +388,8 @@ public final class CompatProviderImpl implements CompatProvider {
 		return componentsData;
 	}
 
+	// The cast is required for the null analysis, but javac considers it redundant.
+	@SuppressWarnings("cast")
 	@Override
 	public ItemStack deserializeItemStack(
 			int dataVersion,

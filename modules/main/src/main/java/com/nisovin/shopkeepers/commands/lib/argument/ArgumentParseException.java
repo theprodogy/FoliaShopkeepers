@@ -15,7 +15,7 @@ public class ArgumentParseException extends CommandException {
 	private static final long serialVersionUID = -4968777515685479426L;
 
 	// Can be null if not caused by any CommandArgument:
-	private final @Nullable CommandArgument<?> argument;
+	private final transient @Nullable CommandArgument<?> argument;
 
 	public ArgumentParseException(@Nullable CommandArgument<?> argument, Text message) {
 		this(argument, message, null);

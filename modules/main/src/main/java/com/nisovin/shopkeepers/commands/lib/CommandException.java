@@ -15,7 +15,7 @@ public class CommandException extends Exception {
 
 	private static final long serialVersionUID = 3021047528891246476L;
 
-	private final Text messageText;
+	private final transient Text messageText;
 
 	public CommandException(Text message) {
 		this(message, null);

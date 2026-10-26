@@ -57,7 +57,7 @@ public final class MutableBlockLocation extends BlockLocation {
 		);
 	}
 
-	/////
+	// ---
 
 	/**
 	 * Creates a new {@link MutableBlockLocation} with unset world name and all coordinates being

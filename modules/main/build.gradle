@@ -39,6 +39,8 @@ dependencies {
 	// runtimeElements. However, we need to manually add these dependencies to our test dependencies
 	// if needed.
 	compileOnly libs.paper.api // Includes the Bukkit API
+	// Annotations referenced by the BungeeCord chat API:
+	compileOnly 'org.projectlombok:lombok:1.18.38'
 	compileOnly libs.worldguard.bukkit
 	compileOnly libs.towny
 	(compileOnly libs.citizens.main) { transitive = false }
