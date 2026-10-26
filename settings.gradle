@@ -1,8 +1,6 @@
 rootProject.name = 'shopkeepers'
 
-// Project name -> folder inside 'modules/'.
-// Version modules live in 'versions/<Minecraft version>'. Their project names
-// match the compat version ids and Java packages, which are resolved by name at runtime.
+// Version module names must match the compat version ids, which are resolved at runtime.
 def subprojects = [
 	'external-annotations': 'external-annotations',
 	'api': 'api',

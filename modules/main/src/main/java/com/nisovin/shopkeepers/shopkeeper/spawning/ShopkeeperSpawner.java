@@ -383,8 +383,7 @@ public class ShopkeeperSpawner {
 		this.spawnShopkeeper(shopkeeper, true);
 	}
 
-	// On Folia, runs the given action on the region that owns the shopkeeper's location if the
-	// current thread does not own it. Returns true if the action was deferred.
+	// Returns true if the action was deferred to the region that owns the shopkeeper.
 	private boolean deferToOwningRegion(AbstractShopkeeper shopkeeper, Runnable action) {
 		if (!SchedulerUtils.isFolia()) return false;
 
@@ -400,8 +399,7 @@ public class ShopkeeperSpawner {
 		return true;
 	}
 
-	// Returns true on success. On Folia, this also returns true if the spawning has been deferred
-	// to the region that owns the shopkeeper.
+	// Returns true on success, or if the spawning was deferred to another region.
 	private boolean doSpawnShopkeeper(AbstractShopkeeper shopkeeper) {
 		assert shopkeeper != null;
 		if (this.deferToOwningRegion(shopkeeper, () -> {

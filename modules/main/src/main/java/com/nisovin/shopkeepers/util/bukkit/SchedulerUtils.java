@@ -24,13 +24,6 @@ import net.kyori.adventure.key.Key;
 
 /**
  * Scheduler related utilities.
- * <p>
- * All tasks are scheduled via Paper's region aware schedulers, which also work on Folia:
- * <ul>
- * <li>"Main thread" tasks run on the global region.
- * <li>Entity tasks run on the region that owns the entity.
- * <li>Chunk tasks run on the region that owns the chunk.
- * </ul>
  */
 public final class SchedulerUtils {
 
@@ -40,27 +33,13 @@ public final class SchedulerUtils {
 			Key.key("papermc", "folia")
 	);
 
-	// On Folia, the plugin's state is accessed from multiple region threads. Instead of making all
-	// state thread-safe, every event handler, command and synchronous task holds this lock.
+	// Held by all event handlers, commands and sync tasks on Folia instead of making all state thread-safe.
 	static final ReentrantLock FOLIA_LOCK = new ReentrantLock();
 
-	/**
-	 * Checks if the server is running Folia.
-	 * 
-	 * @return <code>true</code> if running on Folia
-	 */
 	public static boolean isFolia() {
 		return FOLIA;
 	}
 
-	/**
-	 * Runs the given task while holding the plugin's Folia lock.
-	 * <p>
-	 * On other servers, the task is run directly.
-	 * 
-	 * @param task
-	 *            the task
-	 */
 	public static void runLocked(Runnable task) {
 		if (!FOLIA) {
 			task.run();
@@ -156,17 +135,6 @@ public final class SchedulerUtils {
 		return runTaskLaterOrOmit(plugin, task, 0L);
 	}
 
-	/**
-	 * Runs the given task on the global region after the given delay.
-	 *
-	 * @param plugin
-	 *            the plugin
-	 * @param task
-	 *            the task
-	 * @param delay
-	 *            the delay in ticks, values below <code>1</code> run the task during the next tick
-	 * @return the scheduled task, or <code>null</code> if the plugin is not enabled
-	 */
 	public static @Nullable ScheduledTask runTaskLaterOrOmit(
 			Plugin plugin,
 			Runnable task,
@@ -189,20 +157,6 @@ public final class SchedulerUtils {
 		return null;
 	}
 
-	/**
-	 * Runs the given task repeatedly on the global region.
-	 *
-	 * @param plugin
-	 *            the plugin
-	 * @param task
-	 *            the task
-	 * @param delay
-	 *            the initial delay in ticks, values below <code>1</code> are treated as
-	 *            <code>1</code>
-	 * @param period
-	 *            the period in ticks, values below <code>1</code> are treated as <code>1</code>
-	 * @return the scheduled task, or <code>null</code> if the plugin is not enabled
-	 */
 	public static @Nullable ScheduledTask runTaskTimerOrOmit(
 			Plugin plugin,
 			Runnable task,
@@ -225,22 +179,6 @@ public final class SchedulerUtils {
 		return null;
 	}
 
-	/**
-	 * Runs the given task on the region that owns the given entity after the given delay.
-	 * <p>
-	 * The task is not run if the entity is removed before the task executes.
-	 *
-	 * @param plugin
-	 *            the plugin
-	 * @param entity
-	 *            the entity
-	 * @param task
-	 *            the task
-	 * @param delay
-	 *            the delay in ticks, values below <code>1</code> are treated as <code>1</code>
-	 * @return the scheduled task, or <code>null</code> if the plugin is not enabled or the entity
-	 *         has already been removed
-	 */
 	public static @Nullable ScheduledTask runEntityTaskLaterOrOmit(
 			Plugin plugin,
 			Entity entity,
@@ -272,25 +210,6 @@ public final class SchedulerUtils {
 		return runEntityTaskLaterOrOmit(plugin, entity, task, 1L);
 	}
 
-	/**
-	 * Runs the given task repeatedly on the region that owns the given entity.
-	 * <p>
-	 * The task stops if the entity is removed.
-	 *
-	 * @param plugin
-	 *            the plugin
-	 * @param entity
-	 *            the entity
-	 * @param task
-	 *            the task
-	 * @param delay
-	 *            the initial delay in ticks, values below <code>1</code> are treated as
-	 *            <code>1</code>
-	 * @param period
-	 *            the period in ticks, values below <code>1</code> are treated as <code>1</code>
-	 * @return the scheduled task, or <code>null</code> if the plugin is not enabled or the entity
-	 *         has already been removed
-	 */
 	public static @Nullable ScheduledTask runEntityTaskTimerOrOmit(
 			Plugin plugin,
 			Entity entity,
@@ -316,23 +235,6 @@ public final class SchedulerUtils {
 		return null;
 	}
 
-	/**
-	 * Runs the given task on the region that owns the given chunk after the given delay.
-	 * 
-	 * @param plugin
-	 *            the plugin
-	 * @param world
-	 *            the world
-	 * @param chunkX
-	 *            the chunk x coordinate
-	 * @param chunkZ
-	 *            the chunk z coordinate
-	 * @param task
-	 *            the task
-	 * @param delay
-	 *            the delay in ticks, values below <code>1</code> run the task during the next tick
-	 * @return the scheduled task, or <code>null</code> if the plugin is not enabled
-	 */
 	public static @Nullable ScheduledTask runRegionTaskLaterOrOmit(
 			Plugin plugin,
 			World world,
@@ -378,20 +280,7 @@ public final class SchedulerUtils {
 		return runAsyncTaskLaterOrOmit(plugin, scheduledTask -> task.run(), delay);
 	}
 
-	/**
-	 * Runs the given task asynchronously after the given delay.
-	 * <p>
-	 * The task receives its own {@link ScheduledTask}, because the task may already start running
-	 * before this method returns.
-	 * 
-	 * @param plugin
-	 *            the plugin
-	 * @param task
-	 *            the task
-	 * @param delay
-	 *            the delay in ticks
-	 * @return the scheduled task, or <code>null</code> if the plugin is not enabled
-	 */
+	// The task receives its own ScheduledTask, because it may start before this method returns.
 	public static @Nullable ScheduledTask runAsyncTaskLaterOrOmit(
 			Plugin plugin,
 			Consumer<ScheduledTask> task,
@@ -472,14 +361,6 @@ public final class SchedulerUtils {
 		}
 	}
 
-	/**
-	 * Cancels all global region and async tasks of the given plugin.
-	 * <p>
-	 * Entity tasks are retired together with their entities.
-	 *
-	 * @param plugin
-	 *            the plugin
-	 */
 	public static void cancelTasks(Plugin plugin) {
 		Validate.notNull(plugin, "plugin is null");
 		Bukkit.getGlobalRegionScheduler().cancelTasks(plugin);

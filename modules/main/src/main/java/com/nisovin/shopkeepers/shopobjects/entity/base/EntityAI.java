@@ -575,7 +575,6 @@ public class EntityAI implements Listener {
 		chunks.values().forEach(this::processEntitiesInRegion);
 	}
 
-	// On Folia, entities are processed on the region that owns their chunk.
 	private void processEntitiesInRegion(ChunkData chunkData) {
 		World world = chunkData.chunkCoords.getWorld();
 		if (!SchedulerUtils.isFolia() || world == null) {

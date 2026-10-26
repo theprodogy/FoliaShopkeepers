@@ -266,7 +266,6 @@ public class ShopkeeperTicker {
 		activeTickingGroup.getAndIncrement();
 	}
 
-	// On Folia, shopkeepers are ticked on the region that owns their location.
 	private void tickShopkeeperInRegion(AbstractShopkeeper shopkeeper) {
 		String worldName = shopkeeper.getWorldName();
 		World world = (worldName != null) ? Bukkit.getWorld(worldName) : null;

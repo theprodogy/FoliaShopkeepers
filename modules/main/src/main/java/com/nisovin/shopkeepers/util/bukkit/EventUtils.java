@@ -404,18 +404,6 @@ public final class EventUtils {
 		}
 	}
 
-	/**
-	 * Registers the {@link EventHandler event handlers} of the given {@link Listener}.
-	 * <p>
-	 * On Folia, every handler invocation holds the plugin's Folia lock (see
-	 * {@link SchedulerUtils#runLocked(Runnable)}). On other servers, this behaves like
-	 * {@link org.bukkit.plugin.PluginManager#registerEvents(Listener, Plugin)}.
-	 * 
-	 * @param listener
-	 *            the listener, not <code>null</code>
-	 * @param plugin
-	 *            the plugin, not <code>null</code>
-	 */
 	public static void registerEvents(Listener listener, Plugin plugin) {
 		Validate.notNull(listener, "listener is null");
 		Validate.notNull(plugin, "plugin is null");
@@ -425,7 +413,6 @@ public final class EventUtils {
 			return;
 		}
 
-		// Same handler lookup as Bukkit: Public (including inherited) and declared methods.
 		Set<Method> methods = new LinkedHashSet<>();
 		methods.addAll(Arrays.asList(listener.getClass().getMethods()));
 		methods.addAll(Arrays.asList(listener.getClass().getDeclaredMethods()));

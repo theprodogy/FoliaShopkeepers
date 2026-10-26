@@ -6,7 +6,6 @@ website: '${dboUrl}'
 
 main: com.nisovin.shopkeepers.SKShopkeepersPlugin
 api-version: '1.21.11'
-# Plugin state is guarded by a lock and world access runs on the owning region:
 folia-supported: true
 # Allows add-on plugins to access the Shopkeepers API:
 has-open-classloader: true
@@ -42,7 +41,6 @@ dependencies:
             load: BEFORE
             required: false
 
-# Commands are registered via Paper's lifecycle API.
 
 permissions:
     # Command permissions:

@@ -8,7 +8,6 @@ plugins {
 dependencies {
 	testImplementation project(':shopkeepers-main')
 	testImplementation project(path: ':shopkeepers-v26_3_R1_paper')
-	// Includes the Paper API and server:
 	paperweight.paperDevBundle('26.3.build.+')
 	testImplementation libs.junit
 	testImplementation libs.hamcrest

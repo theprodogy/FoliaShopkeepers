@@ -18,24 +18,14 @@ import com.nisovin.shopkeepers.util.logging.Log;
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 
 /**
- * Applies the configured {@link Settings#shopkeeperViewDistance} as the entity tracking range of
- * shopkeeper entities.
- * <p>
- * The server's view distance still limits how far shopkeeper entities are visible.
+ * Applies {@link Settings#shopkeeperViewDistance} as the tracking range of shopkeeper entities.
  */
 public class ShopkeeperViewDistance {
 
-	/**
-	 * The setting value for the largest possible view distance.
-	 */
 	public static final int ALWAYS_VISIBLE = -1;
-	/**
-	 * The setting value that keeps the server's entity tracking range.
-	 */
 	public static final int SERVER_DEFAULT = 0;
 
-	// Exceeds the maximum view distance of 32 chunks, so the view distance becomes the limit. Not
-	// larger, because the server scales this value.
+	// Above the max view distance of 32 chunks. Not larger, because the server scales the range.
 	private static final int ALWAYS_VISIBLE_RANGE = 1024;
 
 	private static final long UPDATE_PERIOD_TICKS = 20L;
@@ -43,10 +33,8 @@ public class ShopkeeperViewDistance {
 	private final SKShopkeepersPlugin plugin;
 	private @Nullable ScheduledTask task = null;
 
-	// The server's tracking ranges, by tracked entity:
 	private final Map<Object, Integer> defaultRanges = new WeakHashMap<>();
 
-	// Server internals, resolved on first use:
 	private @Nullable Method getHandleMethod = null;
 	private @Nullable Method getTrackedEntityMethod = null;
 	private @Nullable Field rangeField = null;
@@ -82,7 +70,6 @@ public class ShopkeeperViewDistance {
 			if (entity == null) continue;
 
 			if (SchedulerUtils.isFolia()) {
-				// The tracker belongs to the region that owns the entity:
 				SchedulerUtils.runEntityTaskOrOmit(plugin, entity, () -> this.update(entity));
 			} else {
 				this.update(entity);

@@ -44,8 +44,7 @@ public class Commands {
 		ShopkeepersAdminCommand shopkeepersAdminCommand = new ShopkeepersAdminCommand(plugin);
 		this.shopkeepersAdminCommand = shopkeepersAdminCommand;
 
-		// Paper only allows lifecycle registrations during the initial plugin enable: Plugin reloads
-		// keep the registered commands, which delegate to the current command instances.
+		// Paper only allows this during the first enable: Reloads reuse the registered commands.
 		if (!registered) {
 			registered = true;
 			plugin.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, event -> {
@@ -69,7 +68,6 @@ public class Commands {
 		}
 	}
 
-	// The permission hides the command from senders that lack it. Null shows it to everyone.
 	private static BasicCommand delegate(
 			Supplier<? extends BaseCommand> command,
 			@Nullable String permission

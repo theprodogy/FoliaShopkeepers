@@ -85,7 +85,6 @@ class CommandTestDamage extends PlayerCommand {
 				+ "&a, Per tick: &e" + timesPerTick + "&a, Duration &e" + durationTicks
 				+ " ticks &a..."));
 
-		// Runs on the region that owns the target entity:
 		int[] tickCounterHolder = new int[] { 0 };
 		target.getScheduler().runAtFixedRate(plugin, task -> {
 			int tickCounter = tickCounterHolder[0];
