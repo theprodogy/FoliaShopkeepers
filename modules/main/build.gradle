@@ -20,6 +20,10 @@ repositories {
 }
 
 configurations {
+	compileOnly {
+		// Old Bukkit API pulled in by plugin dependencies: Conflicts with the Paper API.
+		exclude group: 'org.bukkit', module: 'bukkit'
+	}
 	// Separate configuration for the shaded dependencies to not also include the '*.eea' files.
 	shaded
 	implementation {
