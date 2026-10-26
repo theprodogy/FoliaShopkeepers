@@ -1,8 +1,11 @@
-# Builds the plugin and publishes a GitHub release when a version tag (e.g. v2.28.2) is pushed.
+# Builds the plugin on every push to master, and publishes a GitHub release when a version tag
+# (e.g. v2.28.2) is pushed.
 name: Release
 
 on:
   push:
+    branches:
+    - master
     tags:
     - 'v*'
 
@@ -24,15 +27,18 @@ jobs:
       # The tag (without the leading 'v') replaces the snapshot version:
       run: |
         set -o pipefail
-        ./gradlew build -Pversion="${GITHUB_REF_NAME#v}" --no-daemon --console=plain 2>&1 | tee build.log
+        VERSION_ARG=()
+        if [ "$GITHUB_REF_TYPE" = "tag" ]; then VERSION_ARG=(-Pversion="${GITHUB_REF_NAME#v}"); fi
+        ./gradlew build "${VERSION_ARG[@]}" --no-daemon --console=plain 2>&1 | tee build.log
     - name: Report build errors
       if: failure()
       # Annotations are visible without signing in, unlike the raw logs:
       run: |
-        grep -E "What went wrong|error:|ERROR in|FAILED|> " build.log | head -40 | while IFS= read -r line; do
+        { grep -E -A8 "What went wrong" build.log; grep -E "error:|ERROR in|FAILED" build.log; } | head -40 | while IFS= read -r line; do
           echo "::error::$line"
         done
     - name: Publish release
+      if: github.ref_type == 'tag'
       uses: softprops/action-gh-release@v2
       with:
         name: FoliaShopkeepers ${{ github.ref_name }}
