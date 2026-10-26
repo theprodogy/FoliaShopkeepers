@@ -10,21 +10,23 @@ on:
     - 'v*'
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  release:
+  build:
     runs-on: ubuntu-latest
     steps:
     - name: Check out repository code
       uses: actions/checkout@v6
+      with:
+        persist-credentials: false
     - name: Set up JDK 25
       uses: actions/setup-java@v5
       with:
         java-version: '25'
         distribution: 'zulu'
     - name: Build Shopkeepers
-      # The tag (without the leading 'v') replaces the snapshot version:
+      # For tags, the tag (without the leading 'v') replaces the snapshot version:
       run: |
         set -o pipefail
         VERSION_ARG=()
@@ -32,17 +34,36 @@ jobs:
         ./gradlew build "${VERSION_ARG[@]}" --no-daemon --console=plain 2>&1 | tee build.log
     - name: Report build errors
       if: failure()
-      # Annotations are visible without signing in, unlike the raw logs:
+      # Annotations are visible without signing in, unlike the raw logs. Control characters and
+      # '::' are removed so that build output cannot inject workflow commands.
       run: |
-        { grep -E -A8 "What went wrong" build.log; grep -E "error:|ERROR in|FAILED" build.log; } | head -40 | while IFS= read -r line; do
-          echo "::error::$line"
-        done
+        [ -f build.log ] || exit 0
+        { grep -E -A8 "What went wrong" build.log; grep -E "error:|ERROR in|FAILED" build.log; } \
+          | head -40 | tr -cd '[:print:]\n' | sed 's/::/: :/g' \
+          | while IFS= read -r line; do printf '::error::%s\n' "$line"; done
+    - name: Upload plugin jar
+      uses: actions/upload-artifact@v6
+      with:
+        name: plugin
+        path: modules/dist/build/libs/Shopkeepers-*.jar
+        if-no-files-found: error
+
+  release:
+    needs: build
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - name: Download plugin jar
+      uses: actions/download-artifact@v7
+      with:
+        name: plugin
     - name: Publish release
-      if: github.ref_type == 'tag'
       uses: softprops/action-gh-release@v2
       with:
         name: FoliaShopkeepers ${{ github.ref_name }}
-        files: modules/dist/build/libs/Shopkeepers-*.jar
+        files: Shopkeepers-*.jar
         fail_on_unmatched_files: true
         body: |
           Paper and Folia fork of Shopkeepers.
