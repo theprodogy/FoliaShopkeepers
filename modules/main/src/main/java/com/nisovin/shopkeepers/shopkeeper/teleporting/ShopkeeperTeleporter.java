@@ -1,12 +1,16 @@
 package com.nisovin.shopkeepers.shopkeeper.teleporting;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+import com.nisovin.shopkeepers.api.ShopkeepersPlugin;
+import com.nisovin.shopkeepers.api.internal.util.Unsafe;
 import com.nisovin.shopkeepers.api.shopkeeper.Shopkeeper;
 import com.nisovin.shopkeepers.lang.Messages;
+import com.nisovin.shopkeepers.util.bukkit.SchedulerUtils;
 import com.nisovin.shopkeepers.util.bukkit.TeleportHelper;
 import com.nisovin.shopkeepers.util.bukkit.TextUtils;
 
@@ -39,6 +43,19 @@ public final class ShopkeeperTeleporter {
 			}
 		}
 		assert shopkeeperLocation != null;
+
+		// On Folia, the safe destination lookup has to run on the region that owns the shopkeeper:
+		if (SchedulerUtils.isFolia() && !Bukkit.isOwnedByCurrentRegion(shopkeeperLocation)) {
+			SchedulerUtils.runRegionTaskLaterOrOmit(
+					ShopkeepersPlugin.getInstance(),
+					Unsafe.assertNonNull(shopkeeperLocation.getWorld()),
+					shopkeeperLocation.getBlockX() >> 4,
+					shopkeeperLocation.getBlockZ() >> 4,
+					() -> teleport(player, shopkeeper, force, sender),
+					0L
+			);
+			return true;
+		}
 
 		// Teleport the player a few blocks in front of the shopkeeper:
 		shopkeeperLocation.setYaw(shopkeeper.getYaw());
@@ -82,20 +99,36 @@ public final class ShopkeeperTeleporter {
 		teleportLocation.setDirection(shopkeeperLocation.toVector().subtract(teleportPlayerEyeLocationVector));
 		teleportLocation.setPitch(0);
 
-		if (!player.teleport(teleportLocation)) {
-			if (sender != null) {
-				TextUtils.sendMessage(sender, Messages.teleportFailed);
-			}
-			return false;
+		if (SchedulerUtils.isFolia()) {
+			// The player may be owned by another region:
+			player.teleportAsync(teleportLocation).thenAccept(success -> {
+				sendTeleportResult(player, shopkeeper, sender, success);
+			});
+			return true;
 		}
 
-		if (sender != null) {
-			TextUtils.sendMessage(sender, Messages.teleportSuccess,
-					"player", TextUtils.getPlayerText(player),
-					"shop", TextUtils.getShopText(shopkeeper)
-			);
+		boolean success = player.teleport(teleportLocation);
+		sendTeleportResult(player, shopkeeper, sender, success);
+		return success;
+	}
+
+	private static void sendTeleportResult(
+			Player player,
+			Shopkeeper shopkeeper,
+			@Nullable CommandSender sender,
+			boolean success
+	) {
+		if (sender == null) return;
+
+		if (!success) {
+			TextUtils.sendMessage(sender, Messages.teleportFailed);
+			return;
 		}
-		return true;
+
+		TextUtils.sendMessage(sender, Messages.teleportSuccess,
+				"player", TextUtils.getPlayerText(player),
+				"shop", TextUtils.getShopText(shopkeeper)
+		);
 	}
 
 	private ShopkeeperTeleporter() {

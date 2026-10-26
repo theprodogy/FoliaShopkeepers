@@ -1,6 +1,5 @@
 package com.nisovin.shopkeepers.paper;
 
-import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
@@ -10,6 +9,7 @@ import com.destroystokyo.paper.event.entity.EntityZapEvent;
 import com.nisovin.shopkeepers.SKShopkeepersPlugin;
 import com.nisovin.shopkeepers.api.shopkeeper.ShopkeeperRegistry;
 import com.nisovin.shopkeepers.compat.Compat;
+import com.nisovin.shopkeepers.util.bukkit.EventUtils;
 import com.nisovin.shopkeepers.util.java.Validate;
 
 /**
@@ -33,7 +33,7 @@ class PaperEntityZapListener implements Listener {
 		// In newer Paper versions, we handle the EntityZapEvent instead of the deprecated
 		// PigZapEvent:
 		if (!Compat.getProvider().isHandlePigZapEvent()) {
-			Bukkit.getPluginManager().registerEvents(this, plugin);
+			EventUtils.registerEvents(this, plugin);
 		}
 	}
 

@@ -25,6 +25,7 @@ import com.nisovin.shopkeepers.shopkeeper.registry.SKShopkeeperRegistry;
 import com.nisovin.shopkeepers.shopkeeper.spawning.ShopkeeperSpawnState.State;
 import com.nisovin.shopkeepers.shopobjects.AbstractShopObject;
 import com.nisovin.shopkeepers.shopobjects.AbstractShopObjectType;
+import com.nisovin.shopkeepers.util.bukkit.EventUtils;
 import com.nisovin.shopkeepers.util.bukkit.SchedulerUtils;
 import com.nisovin.shopkeepers.util.bukkit.TextUtils;
 import com.nisovin.shopkeepers.util.java.Validate;
@@ -95,7 +96,7 @@ public class ShopkeeperSpawner {
 		// Start the spawn queue:
 		spawnQueue.start();
 
-		Bukkit.getPluginManager().registerEvents(listener, plugin);
+		EventUtils.registerEvents(listener, plugin);
 
 		SchedulerUtils.runTaskLaterOrOmit(plugin, new CheckUnspawnableShopkeepersTask(), 5L);
 	}
@@ -382,9 +383,35 @@ public class ShopkeeperSpawner {
 		this.spawnShopkeeper(shopkeeper, true);
 	}
 
-	// Returns true on success.
+	// On Folia, runs the given action on the region that owns the shopkeeper's location if the
+	// current thread does not own it. Returns true if the action was deferred.
+	private boolean deferToOwningRegion(AbstractShopkeeper shopkeeper, Runnable action) {
+		if (!SchedulerUtils.isFolia()) return false;
+
+		String worldName = shopkeeper.getWorldName();
+		World world = (worldName != null) ? Bukkit.getWorld(worldName) : null;
+		if (world == null) return false;
+
+		int chunkX = ChunkCoords.fromBlock(shopkeeper.getX());
+		int chunkZ = ChunkCoords.fromBlock(shopkeeper.getZ());
+		if (Bukkit.isOwnedByCurrentRegion(world, chunkX, chunkZ)) return false;
+
+		SchedulerUtils.runRegionTaskLaterOrOmit(plugin, world, chunkX, chunkZ, action, 0L);
+		return true;
+	}
+
+	// Returns true on success. On Folia, this also returns true if the spawning has been deferred
+	// to the region that owns the shopkeeper.
 	private boolean doSpawnShopkeeper(AbstractShopkeeper shopkeeper) {
 		assert shopkeeper != null;
+		if (this.deferToOwningRegion(shopkeeper, () -> {
+			if (shopkeeper.isValid()) {
+				this.doSpawnShopkeeper(shopkeeper);
+			}
+		})) {
+			return true;
+		}
+
 		AbstractShopObject shopObject = shopkeeper.getShopObject();
 		AbstractShopObjectType<?> shopObjectType = shopObject.getType();
 		assert shopObjectType.mustBeSpawned();
@@ -443,6 +470,10 @@ public class ShopkeeperSpawner {
 	// This also removes the shopkeeper from the spawn queue.
 	private void doDespawnShopkeeper(AbstractShopkeeper shopkeeper) {
 		assert shopkeeper != null;
+		if (this.deferToOwningRegion(shopkeeper, () -> this.doDespawnShopkeeper(shopkeeper))) {
+			return;
+		}
+
 		AbstractShopObject shopObject = shopkeeper.getShopObject();
 		assert shopObject.getType().mustBeSpawned();
 

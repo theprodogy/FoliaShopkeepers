@@ -5,6 +5,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
@@ -17,7 +18,9 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 import com.nisovin.shopkeepers.util.java.Validate;
 
+import io.papermc.paper.ServerBuildInfo;
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
+import net.kyori.adventure.key.Key;
 
 /**
  * Scheduler related utilities.
@@ -32,6 +35,45 @@ import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 public final class SchedulerUtils {
 
 	private static final long MILLIS_PER_TICK = 50L;
+
+	private static final boolean FOLIA = ServerBuildInfo.buildInfo().isBrandCompatible(
+			Key.key("papermc", "folia")
+	);
+
+	// On Folia, the plugin's state is accessed from multiple region threads. Instead of making all
+	// state thread-safe, every event handler, command and synchronous task holds this lock.
+	static final ReentrantLock FOLIA_LOCK = new ReentrantLock();
+
+	/**
+	 * Checks if the server is running Folia.
+	 * 
+	 * @return <code>true</code> if running on Folia
+	 */
+	public static boolean isFolia() {
+		return FOLIA;
+	}
+
+	/**
+	 * Runs the given task while holding the plugin's Folia lock.
+	 * <p>
+	 * On other servers, the task is run directly.
+	 * 
+	 * @param task
+	 *            the task
+	 */
+	public static void runLocked(Runnable task) {
+		if (!FOLIA) {
+			task.run();
+			return;
+		}
+
+		FOLIA_LOCK.lock();
+		try {
+			task.run();
+		} finally {
+			FOLIA_LOCK.unlock();
+		}
+	}
 
 	// Paper's async scheduler does not expose its running tasks, so we count them ourselves:
 	private static final Map<Plugin, AtomicInteger> ACTIVE_ASYNC_TASKS = new ConcurrentHashMap<>();
@@ -103,7 +145,7 @@ public final class SchedulerUtils {
 	public static boolean runOnMainThreadOrOmit(Plugin plugin, Runnable task) {
 		validatePluginTask(plugin, task);
 		if (isMainThread()) {
-			task.run();
+			runLocked(task);
 			return true;
 		} else {
 			return (runTaskOrOmit(plugin, task) != null);
@@ -136,9 +178,9 @@ public final class SchedulerUtils {
 			try {
 				var scheduler = Bukkit.getGlobalRegionScheduler();
 				if (delay < 1L) {
-					return scheduler.run(plugin, scheduledTask -> task.run());
+					return scheduler.run(plugin, scheduledTask -> runLocked(task));
 				} else {
-					return scheduler.runDelayed(plugin, scheduledTask -> task.run(), delay);
+					return scheduler.runDelayed(plugin, scheduledTask -> runLocked(task), delay);
 				}
 			} catch (IllegalPluginAccessException e) {
 				// Couldn't register task: The plugin got disabled just now.
@@ -172,7 +214,7 @@ public final class SchedulerUtils {
 			try {
 				return Bukkit.getGlobalRegionScheduler().runAtFixedRate(
 						plugin,
-						scheduledTask -> task.run(),
+						scheduledTask -> runLocked(task),
 						Math.max(1L, delay),
 						Math.max(1L, period)
 				);
@@ -211,7 +253,7 @@ public final class SchedulerUtils {
 			try {
 				return entity.getScheduler().runDelayed(
 						plugin,
-						scheduledTask -> task.run(),
+						scheduledTask -> runLocked(task),
 						null,
 						Math.max(1L, delay)
 				);
@@ -262,7 +304,7 @@ public final class SchedulerUtils {
 			try {
 				return entity.getScheduler().runAtFixedRate(
 						plugin,
-						scheduledTask -> task.run(),
+						scheduledTask -> runLocked(task),
 						null,
 						Math.max(1L, delay),
 						Math.max(1L, period)
@@ -305,14 +347,14 @@ public final class SchedulerUtils {
 			try {
 				var scheduler = Bukkit.getRegionScheduler();
 				if (delay < 1L) {
-					return scheduler.run(plugin, world, chunkX, chunkZ, scheduledTask -> task.run());
+					return scheduler.run(plugin, world, chunkX, chunkZ, scheduledTask -> runLocked(task));
 				} else {
 					return scheduler.runDelayed(
 							plugin,
 							world,
 							chunkX,
 							chunkZ,
-							scheduledTask -> task.run(),
+							scheduledTask -> runLocked(task),
 							delay
 					);
 				}

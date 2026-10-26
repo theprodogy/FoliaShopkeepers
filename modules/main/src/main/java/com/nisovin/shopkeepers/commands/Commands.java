@@ -1,5 +1,6 @@
 package com.nisovin.shopkeepers.commands;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -9,6 +10,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 import com.nisovin.shopkeepers.SKShopkeepersPlugin;
 import com.nisovin.shopkeepers.commands.shopkeepers.ShopkeepersCommand;
+import com.nisovin.shopkeepers.util.bukkit.SchedulerUtils;
 import com.nisovin.shopkeepers.util.java.Validate;
 
 import io.papermc.paper.command.brigadier.BasicCommand;
@@ -42,12 +44,16 @@ public class Commands {
 			BasicCommand delegate = new BasicCommand() {
 				@Override
 				public void execute(CommandSourceStack source, @NonNull String[] args) {
-					getShopkeepersCommand().execute(source, args);
+					SchedulerUtils.runLocked(() -> getShopkeepersCommand().execute(source, args));
 				}
 
 				@Override
 				public Collection<String> suggest(CommandSourceStack source, @NonNull String[] args) {
-					return getShopkeepersCommand().suggest(source, args);
+					List<Collection<String>> result = new ArrayList<>(1);
+					SchedulerUtils.runLocked(() -> {
+						result.add(getShopkeepersCommand().suggest(source, args));
+					});
+					return result.get(0);
 				}
 			};
 			plugin.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, event -> {

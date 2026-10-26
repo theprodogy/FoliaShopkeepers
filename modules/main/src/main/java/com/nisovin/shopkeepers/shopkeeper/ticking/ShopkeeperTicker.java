@@ -8,7 +8,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.bukkit.Bukkit;
+import org.bukkit.World;
+
 import com.nisovin.shopkeepers.SKShopkeepersPlugin;
+import com.nisovin.shopkeepers.api.util.ChunkCoords;
 import com.nisovin.shopkeepers.debug.DebugOptions;
 import com.nisovin.shopkeepers.shopkeeper.AbstractShopkeeper;
 import com.nisovin.shopkeepers.util.bukkit.SchedulerUtils;
@@ -239,7 +243,7 @@ public class ShopkeeperTicker {
 
 		currentlyTicking = true;
 		TickingGroup tickingGroup = this.getTickingGroup(activeTickingGroup.getValue());
-		tickingGroup.getShopkeepers().forEach(this::tickShopkeeper);
+		tickingGroup.getShopkeepers().forEach(this::tickShopkeeperInRegion);
 		currentlyTicking = false;
 
 		// Process pending shopkeeper ticking registration changes:
@@ -260,6 +264,31 @@ public class ShopkeeperTicker {
 
 		// Update the active ticking group:
 		activeTickingGroup.getAndIncrement();
+	}
+
+	// On Folia, shopkeepers are ticked on the region that owns their location.
+	private void tickShopkeeperInRegion(AbstractShopkeeper shopkeeper) {
+		String worldName = shopkeeper.getWorldName();
+		World world = (worldName != null) ? Bukkit.getWorld(worldName) : null;
+		if (!SchedulerUtils.isFolia() || world == null) {
+			this.tickShopkeeper(shopkeeper);
+			return;
+		}
+
+		SchedulerUtils.runRegionTaskLaterOrOmit(
+				plugin,
+				world,
+				ChunkCoords.fromBlock(shopkeeper.getX()),
+				ChunkCoords.fromBlock(shopkeeper.getZ()),
+				() -> {
+					dirty = false;
+					this.tickShopkeeper(shopkeeper);
+					if (dirty) {
+						plugin.getShopkeeperStorage().saveDelayed();
+					}
+				},
+				0L
+		);
 	}
 
 	private void tickShopkeeper(AbstractShopkeeper shopkeeper) {

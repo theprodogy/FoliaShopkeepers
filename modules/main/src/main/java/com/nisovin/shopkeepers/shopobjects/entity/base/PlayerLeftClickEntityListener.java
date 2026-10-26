@@ -22,6 +22,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import com.nisovin.shopkeepers.config.Settings;
 import com.nisovin.shopkeepers.paper.PaperCompat;
 import com.nisovin.shopkeepers.util.bukkit.EntityUtils;
+import com.nisovin.shopkeepers.util.bukkit.EventUtils;
 import com.nisovin.shopkeepers.util.java.Validate;
 
 /**
@@ -64,7 +65,7 @@ class PlayerLeftClickEntityListener implements Listener {
 	void onEnable() {
 		// Paper: Uses a different mechanism to detect left clicks.
 		if (Settings.enableLeftClickInteraction && !PaperCompat.hasProvider()) {
-			Bukkit.getPluginManager().registerEvents(this, plugin);
+			EventUtils.registerEvents(this, plugin);
 		}
 	}
 

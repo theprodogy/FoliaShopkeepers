@@ -26,6 +26,7 @@ import com.nisovin.shopkeepers.shopkeeper.AbstractShopkeeper;
 import com.nisovin.shopkeepers.shopkeeper.registry.SKShopkeeperRegistry;
 import com.nisovin.shopkeepers.shopkeeper.spawning.ShopkeeperSpawner;
 import com.nisovin.shopkeepers.shopkeeper.ticking.ShopkeeperTicker;
+import com.nisovin.shopkeepers.util.bukkit.EventUtils;
 import com.nisovin.shopkeepers.util.bukkit.MutableChunkCoords;
 import com.nisovin.shopkeepers.util.bukkit.SchedulerUtils;
 import com.nisovin.shopkeepers.util.bukkit.TextUtils;
@@ -105,7 +106,7 @@ public class ShopkeeperChunkActivator {
 				Bukkit.getViewDistance()
 		);
 
-		Bukkit.getPluginManager().registerEvents(listener, plugin);
+		EventUtils.registerEvents(listener, plugin);
 	}
 
 	public void onDisable() {

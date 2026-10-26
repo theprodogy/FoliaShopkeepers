@@ -72,7 +72,7 @@ class UIListener implements Listener {
 	}
 
 	void onEnable() {
-		Bukkit.getPluginManager().registerEvents(this, plugin);
+		EventUtils.registerEvents(this, plugin);
 		DEFAULT_INVENTORY_EVENTS.forEach(this::registerEventType);
 	}
 

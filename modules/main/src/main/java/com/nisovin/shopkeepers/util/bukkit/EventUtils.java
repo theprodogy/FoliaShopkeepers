@@ -1,7 +1,9 @@
 package com.nisovin.shopkeepers.util.bukkit;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -9,15 +11,17 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
+import org.bukkit.Bukkit;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
+import org.bukkit.event.EventException;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.EventExecutor;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredListener;
-import org.bukkit.plugin.SimplePluginManager;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -81,7 +85,7 @@ public final class EventUtils {
 	 * Gets the {@link HandlerList} for the specified type of event.
 	 * <p>
 	 * This mimics Bukkit's implementation to find and retrieve the HandlerList (see
-	 * {@link SimplePluginManager}).
+	 * {@code SimplePluginManager}).
 	 * 
 	 * @param eventClass
 	 *            the event class, not <code>null</code>
@@ -120,7 +124,7 @@ public final class EventUtils {
 	 * This searches the given class and its parent classes for a class that provides the handler
 	 * list.
 	 * <p>
-	 * This mimics Bukkit's implementation (see {@link SimplePluginManager}).
+	 * This mimics Bukkit's implementation (see {@code SimplePluginManager}).
 	 * 
 	 * @param eventClass
 	 *            the event class, not <code>null</code>
@@ -397,6 +401,67 @@ public final class EventUtils {
 					+ " (" + rl.getListener().getClass().getName() + ")"
 					+ ", priority: " + rl.getPriority()
 					+ ", ignoring cancelled: " + rl.isIgnoringCancelled());
+		}
+	}
+
+	/**
+	 * Registers the {@link EventHandler event handlers} of the given {@link Listener}.
+	 * <p>
+	 * On Folia, every handler invocation holds the plugin's Folia lock (see
+	 * {@link SchedulerUtils#runLocked(Runnable)}). On other servers, this behaves like
+	 * {@link org.bukkit.plugin.PluginManager#registerEvents(Listener, Plugin)}.
+	 * 
+	 * @param listener
+	 *            the listener, not <code>null</code>
+	 * @param plugin
+	 *            the plugin, not <code>null</code>
+	 */
+	public static void registerEvents(Listener listener, Plugin plugin) {
+		Validate.notNull(listener, "listener is null");
+		Validate.notNull(plugin, "plugin is null");
+		var pluginManager = Bukkit.getPluginManager();
+		if (!SchedulerUtils.isFolia()) {
+			pluginManager.registerEvents(listener, plugin);
+			return;
+		}
+
+		// Same handler lookup as Bukkit: Public (including inherited) and declared methods.
+		Set<Method> methods = new LinkedHashSet<>();
+		methods.addAll(Arrays.asList(listener.getClass().getMethods()));
+		methods.addAll(Arrays.asList(listener.getClass().getDeclaredMethods()));
+		for (Method method : methods) {
+			EventHandler eventHandler = method.getAnnotation(EventHandler.class);
+			if (eventHandler == null || method.isBridge() || method.isSynthetic()) continue;
+			if (method.getParameterCount() != 1) continue;
+
+			Class<?> parameterType = method.getParameterTypes()[0];
+			if (!Event.class.isAssignableFrom(parameterType)) continue;
+
+			Class<? extends Event> eventClass = parameterType.asSubclass(Event.class);
+			method.setAccessible(true);
+			EventExecutor executor = (eventListener, event) -> {
+				// Also called for subclasses of events that have their own handler list:
+				if (!eventClass.isInstance(event)) return;
+
+				SchedulerUtils.FOLIA_LOCK.lock();
+				try {
+					method.invoke(eventListener, event);
+				} catch (InvocationTargetException e) {
+					throw new EventException(e.getCause());
+				} catch (ReflectiveOperationException e) {
+					throw new EventException(e);
+				} finally {
+					SchedulerUtils.FOLIA_LOCK.unlock();
+				}
+			};
+			pluginManager.registerEvent(
+					eventClass,
+					listener,
+					eventHandler.priority(),
+					executor,
+					plugin,
+					eventHandler.ignoreCancelled()
+			);
 		}
 	}
 

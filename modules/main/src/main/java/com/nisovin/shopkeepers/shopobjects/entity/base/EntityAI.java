@@ -29,6 +29,7 @@ import com.nisovin.shopkeepers.api.util.ChunkCoords;
 import com.nisovin.shopkeepers.compat.Compat;
 import com.nisovin.shopkeepers.config.Settings;
 import com.nisovin.shopkeepers.util.bukkit.EntityUtils;
+import com.nisovin.shopkeepers.util.bukkit.EventUtils;
 import com.nisovin.shopkeepers.util.bukkit.MutableChunkCoords;
 import com.nisovin.shopkeepers.util.bukkit.SchedulerUtils;
 import com.nisovin.shopkeepers.util.bukkit.WorldUtils;
@@ -221,7 +222,7 @@ public class EntityAI implements Listener {
 		customGravityEnabled = _isCustomGravityEnabled();
 
 		// Register listener:
-		Bukkit.getPluginManager().registerEvents(this, plugin);
+		EventUtils.registerEvents(this, plugin);
 
 		// Start task:
 		this.startTask();
@@ -571,7 +572,25 @@ public class EntityAI implements Listener {
 			return;
 		}
 
-		chunks.values().forEach(this::processEntities);
+		chunks.values().forEach(this::processEntitiesInRegion);
+	}
+
+	// On Folia, entities are processed on the region that owns their chunk.
+	private void processEntitiesInRegion(ChunkData chunkData) {
+		World world = chunkData.chunkCoords.getWorld();
+		if (!SchedulerUtils.isFolia() || world == null) {
+			this.processEntities(chunkData);
+			return;
+		}
+
+		SchedulerUtils.runRegionTaskLaterOrOmit(
+				plugin,
+				world,
+				chunkData.chunkCoords.getChunkX(),
+				chunkData.chunkCoords.getChunkZ(),
+				() -> this.processEntities(chunkData),
+				0L
+		);
 	}
 
 	private void processEntities(ChunkData chunkData) {

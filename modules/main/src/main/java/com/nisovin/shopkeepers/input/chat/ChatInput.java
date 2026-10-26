@@ -1,6 +1,5 @@
 package com.nisovin.shopkeepers.input.chat;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -27,7 +26,7 @@ public class ChatInput extends InputManager<String> implements Listener {
 	@Override
 	public void onEnable() {
 		super.onEnable();
-		Bukkit.getPluginManager().registerEvents(this, plugin);
+		EventUtils.registerEvents(this, plugin);
 		// Ensure that our chat event handler is always executed first:
 		// Otherwise, we might run into conflicts with other chat plugins that also use the lowest
 		// event priority and that might modify the chat message before we were able to process it

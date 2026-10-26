@@ -1,6 +1,5 @@
 package com.nisovin.shopkeepers.debug.trades;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Statistic;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -61,7 +60,7 @@ public class TradingCountListener implements Listener {
 	}
 
 	public void onEnable() {
-		Bukkit.getPluginManager().registerEvents(this, plugin);
+		EventUtils.registerEvents(this, plugin);
 
 		// Ensure that our statistic increment event handler is always executed first:
 		EventUtils.enforceExecuteFirst(

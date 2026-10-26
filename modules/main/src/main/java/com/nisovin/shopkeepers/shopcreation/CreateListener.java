@@ -83,7 +83,7 @@ class CreateListener implements Listener {
 
 	void onEnable() {
 		shopCreationItemSelectedMessageEnabled = !Messages.creationItemSelected.isPlainTextEmpty();
-		Bukkit.getPluginManager().registerEvents(this, plugin);
+		EventUtils.registerEvents(this, plugin);
 		// Ensure that our interact event handler is always executed first, even after plugin
 		// reloads:
 		// In order to not change the order among the already registered event handlers of our own

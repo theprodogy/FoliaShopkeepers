@@ -12,7 +12,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
-import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -73,6 +72,7 @@ import com.nisovin.shopkeepers.trading.commandtrading.CommandTrading;
 import com.nisovin.shopkeepers.ui.SKDefaultUITypes;
 import com.nisovin.shopkeepers.ui.SKUIRegistry;
 import com.nisovin.shopkeepers.ui.SKUISystem;
+import com.nisovin.shopkeepers.util.bukkit.EventUtils;
 import com.nisovin.shopkeepers.util.bukkit.SchedulerUtils;
 import com.nisovin.shopkeepers.util.java.ClassUtils;
 import com.nisovin.shopkeepers.util.java.Validate;
@@ -409,8 +409,7 @@ public class SKShopkeepersPlugin extends JavaPlugin implements InternalShopkeepe
 		removeShopOnContainerBreak.onEnable();
 
 		// Register events:
-		PluginManager pm = Bukkit.getPluginManager();
-		pm.registerEvents(new PlayerJoinQuitListener(this), this);
+		EventUtils.registerEvents(new PlayerJoinQuitListener(this), this);
 		new TradingCountListener(this).onEnable();
 
 		// DEFAULT SHOP OBJECT TYPES

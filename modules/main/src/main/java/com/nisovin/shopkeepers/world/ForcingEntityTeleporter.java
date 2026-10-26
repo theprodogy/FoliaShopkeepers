@@ -2,7 +2,6 @@ package com.nisovin.shopkeepers.world;
 
 import java.util.UUID;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.EventHandler;
@@ -13,6 +12,8 @@ import org.bukkit.event.entity.EntityTeleportEvent;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import com.nisovin.shopkeepers.SKShopkeepersPlugin;
+import com.nisovin.shopkeepers.util.bukkit.EventUtils;
+import com.nisovin.shopkeepers.util.bukkit.SchedulerUtils;
 import com.nisovin.shopkeepers.util.logging.Log;
 
 /**
@@ -37,7 +38,7 @@ public class ForcingEntityTeleporter implements Listener {
 	}
 
 	public void onEnable() {
-		Bukkit.getPluginManager().registerEvents(this, plugin);
+		EventUtils.registerEvents(this, plugin);
 	}
 
 	public void onDisable() {
@@ -79,6 +80,13 @@ public class ForcingEntityTeleporter implements Listener {
 	 * @return the result of the teleport
 	 */
 	public boolean teleport(Entity entity, Location toLocation) {
+		if (SchedulerUtils.isFolia()) {
+			// Folia only supports asynchronous teleports. The teleport event is then called later,
+			// so we cannot force it.
+			entity.teleportAsync(toLocation);
+			return true;
+		}
+
 		this.nextTeleportEntityUuid = entity.getUniqueId();
 		this.toLocation = toLocation;
 

@@ -1,6 +1,5 @@
 package com.nisovin.shopkeepers.paper;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -40,7 +39,7 @@ class PaperPlayerLeftClickEntityListener implements Listener {
 			return;
 		}
 
-		Bukkit.getPluginManager().registerEvents(this, plugin);
+		EventUtils.registerEvents(this, plugin);
 
 		// Similar to the normal interaction events, we handle this event before any other plugins:
 		EventUtils.enforceExecuteFirst(
