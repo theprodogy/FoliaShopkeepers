@@ -42,7 +42,7 @@ public class BlockZombieVillagerCuringListener implements Listener {
 
 		Player player = event.getPlayer();
 		ItemStack itemInHand = player.getInventory().getItem(event.getHand());
-		if (itemInHand == null || itemInHand.getType() != Material.GOLDEN_APPLE) {
+		if (itemInHand.getType() != Material.GOLDEN_APPLE) {
 			return;
 		}
 

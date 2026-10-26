@@ -1,5 +1,7 @@
 package com.nisovin.shopkeepers.commands.shopkeepers;
 
+import java.util.Arrays;
+
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -41,6 +43,7 @@ import com.nisovin.shopkeepers.util.java.ObjectUtils;
 public class ShopkeepersCommand extends BaseCommand {
 
 	private static final String COMMAND_NAME = "shopkeeper";
+	private static final String COMMAND_ALIAS = "shopkeepers";
 
 	private static final String ARGUMENT_SHOP_TYPE = "shop-type";
 	private static final String ARGUMENT_OBJECT_TYPE = "object-type";
@@ -49,7 +52,7 @@ public class ShopkeepersCommand extends BaseCommand {
 	private final SKShopkeeperRegistry shopkeeperRegistry;
 
 	public ShopkeepersCommand(SKShopkeepersPlugin plugin, Confirmations confirmations) {
-		super(plugin, COMMAND_NAME);
+		super(COMMAND_NAME, Arrays.asList(COMMAND_ALIAS));
 		this.plugin = plugin;
 		this.shopkeeperRegistry = plugin.getShopkeeperRegistry();
 

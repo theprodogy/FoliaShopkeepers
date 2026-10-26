@@ -3,17 +3,44 @@ version: '${pluginVersion}'
 description: Custom villager shopkeepers
 authors: [nisovin, blablubbabc]
 website: '${dboUrl}'
-# Loading after world management plugins and soft dependencies:
-softdepend: [Multiverse-Core, My Worlds, Transporter, Towny, WorldGuard, Citizens, Vault, Gringotts, ChestShop]
 
 main: com.nisovin.shopkeepers.SKShopkeepersPlugin
 api-version: '1.21.11'
+# Allows add-on plugins to access the Shopkeepers API:
+has-open-classloader: true
 
-commands:
-    shopkeeper:
-        description: Base for all shopkeeper commands.
-        aliases: [shopkeepers]
-        usage: 'Unknown command! Try /<command> help'
+# Loading after world management plugins and soft dependencies:
+dependencies:
+    server:
+        Multiverse-Core:
+            load: BEFORE
+            required: false
+        My Worlds:
+            load: BEFORE
+            required: false
+        Transporter:
+            load: BEFORE
+            required: false
+        Towny:
+            load: BEFORE
+            required: false
+        WorldGuard:
+            load: BEFORE
+            required: false
+        Citizens:
+            load: BEFORE
+            required: false
+        Vault:
+            load: BEFORE
+            required: false
+        Gringotts:
+            load: BEFORE
+            required: false
+        ChestShop:
+            load: BEFORE
+            required: false
+
+# Commands are registered via Paper's lifecycle API.
 
 permissions:
     # Command permissions:

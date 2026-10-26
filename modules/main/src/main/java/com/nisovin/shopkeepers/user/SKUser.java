@@ -53,7 +53,7 @@ public final class SKUser implements User {
 	 * @return the user, not <code>null</code>
 	 */
 	public static User of(Player player) {
-		return of(player.getUniqueId(), player.getName());
+		return of(player.getUniqueId(), Unsafe.assertNonNull(player.getName()));
 	}
 
 	/**

@@ -1467,7 +1467,7 @@ public abstract class AbstractPlayerShopkeeper
 
 			processedInventories.add(containerInventory);
 
-			for (ItemStack itemStack : containerInventory.getContents()) {
+			for (ItemStack itemStack : Unsafe.assertNonNull(containerInventory.getContents())) {
 				if (ItemUtils.isEmpty(itemStack)) continue;
 
 				contents.add(itemStack);

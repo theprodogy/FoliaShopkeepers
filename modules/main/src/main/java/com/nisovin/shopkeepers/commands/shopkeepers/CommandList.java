@@ -73,7 +73,7 @@ class CommandList extends Command {
 						// TODO Add alias 'own'?
 						new SenderPlayerNameFallback(new AnyStringFallback(
 								new PlayerByNameArgument(ARGUMENT_PLAYER_NAME)
-										.transformed(player -> player.getName())
+										.transformed(player -> Unsafe.assertNonNull(player.getName()))
 						))
 				), false) // Don't join formats
 		), true, true)); // Join and reverse formats

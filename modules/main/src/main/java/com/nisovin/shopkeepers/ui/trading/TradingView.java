@@ -26,6 +26,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 import com.nisovin.shopkeepers.api.events.ShopkeeperTradeCompletedEvent;
 import com.nisovin.shopkeepers.api.events.ShopkeeperTradeEvent;
+import com.nisovin.shopkeepers.api.internal.util.Unsafe;
 import com.nisovin.shopkeepers.api.shopkeeper.Shopkeeper;
 import com.nisovin.shopkeepers.api.shopkeeper.TradingRecipe;
 import com.nisovin.shopkeepers.api.trading.TradeEffect;
@@ -520,7 +521,7 @@ public class TradingView extends View {
 					Collections.reverse(contentsView);
 
 					// No item copy required here:
-					if (InventoryUtils.addItems(newPlayerContents, resultItem) != 0) {
+					if (InventoryUtils.addItems(Unsafe.assertNonNull(newPlayerContents), resultItem) != 0) {
 						Log.debug(() -> this.getContext().getLogPrefix()
 								+ "Not handling trade: Not enough inventory space.");
 						this.onTradeAborted(tradingContext, false);

@@ -13,6 +13,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 import com.nisovin.shopkeepers.SKShopkeepersPlugin;
 import com.nisovin.shopkeepers.api.ShopkeepersPlugin;
+import com.nisovin.shopkeepers.api.internal.util.Unsafe;
 import com.nisovin.shopkeepers.api.shopkeeper.Shopkeeper;
 import com.nisovin.shopkeepers.api.shopkeeper.player.PlayerShopkeeper;
 import com.nisovin.shopkeepers.api.util.UnmodifiableItemStack;
@@ -110,7 +111,7 @@ class CommandHistory extends Command {
 						// This ensures that we can also lookup the history of offline players.
 						new AnyStringFallback(
 								new PlayerByNameArgument(ARGUMENT_PLAYER_NAME)
-										.transformed(player -> player.getName())
+										.transformed(player -> Unsafe.assertNonNull(player.getName()))
 						)
 				), false) // Don't join formats
 		), true, true).optional()); // Join formats and reverse
