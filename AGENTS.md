@@ -4,7 +4,7 @@ General readme: @README.md
 
 General contribution notes (also applies here): @CONTRIBUTING.md
 
-We primarily target the Bukkit/Spigot API, but also support Paper. Other server variants are untested and not explicitly supported by us.
+We target Paper only (`paper-plugin.yml`, commands via Paper's lifecycle API). Spigot is not supported.
 
 ## Project Structure
 
@@ -19,7 +19,7 @@ This is a multi-module Gradle project (Java).
 - `modules/api`: Plugin API project (mostly interfaces for other add-on plugins to depend on).
 - `modules/dist`: Bundles all relevant project outputs into the final plugin jar.
 - `modules/main`: Core plugin code, targeting the lowest supported Bukkit API version.
-- `modules/versions/<Minecraft version>/spigot` and `.../paper`: Minecraft/Server-version specific module projects that implement logic that might differ across Minecraft versions and server variants (Spigot vs Paper).
+- `modules/versions/<Minecraft version>/paper`: Minecraft/Server-version specific module projects that implement logic that might differ across Minecraft versions.
 - `modules/external-annotations`: Custom external Eclipse annotations for null checking.
 - `modules/test`: Core plugin tests.
 - `modules/shared`: Shared Gradle scripts, e.g. for reusing Gradle logic across version modules.

@@ -14,12 +14,12 @@ To support the latest mappings version:
 
 ## Minecraft update
 
-* Add two new CompatVersion entries in Compat, one for Spigot and one for Paper.
+* Add a new Paper CompatVersion entry in Compat.
 	* Increment the revision number of the compat version (behind the 'R'). Note that for some minor Minecraft updates this version may not necessarily align with CraftBukkit's 'Minecraft Version'.
 
-* Add two new modules (subprojects) for the new compat version, one for Spigot and one for Paper:
+* Add a new Paper module (subproject) for the new compat version:
 	* Copy an existing 'modules/versions/<Minecraft version>' folder, rename it to the new Minecraft version, and rename the package folders.
-	* Update the CraftBukkit version inside the 'build.gradle' file of the new module.
+	* Update the Paper dev bundle version inside the 'build.gradle' file of the new module.
 	* Add an entry (project name and folder) for the module in the root 'settings.gradle' file.
 	* Add an entry for the module in the 'build.gradle' file of the 'dist' module.
 	* Update the CompatProviderImpl class:
@@ -30,11 +30,8 @@ To support the latest mappings version:
 			* Methods or fields might no longer exist or might have been renamed.
 	* Also update the package names of all NMS module test classes.
 
-* Add a new build entry in 'scripts/installSpigotDependencies.sh'.
-
-* If Spigot requires a new JDK version to build:
+* If Paper requires a new JDK version:
 	* Define a version alias for the JDK version in 'scripts/installJDK.sh'.
-	* Add a JDK installation entry in 'scripts/installSpigotDependencies.sh'.
 	* Update the JDK installation entry in 'build.sh'.
 	* Update the JDK version inside the GitHub workflow '.github/workflows/build.yml'.
 
@@ -74,11 +71,10 @@ To support the latest mappings version:
 		* Entries in root 'settings.gradle'.
 		* Entries in 'modules/dist/build.gradle'.
 		* CompatVersion entries in Compat class.
-		* Entries in 'scripts/installSpigotDependencies.sh' script.
-	* Update the minimal Bukkit/Spigot/CraftBukkit dependency versions inside the 'gradle/libs.versions.toml' file.
-	* Update the 'api-version' inside the 'plugin.yml' file.
+	* Update the minimal Bukkit/Paper dependency versions inside the 'gradle/libs.versions.toml' file.
+	* Update the 'api-version' inside the 'paper-plugin.yml' file.
 	* Default config file and Settings class: Update the 'data-version' setting and all item data settings to match the new lowest supported Minecraft server version.
-	* Update the compat module dependency in the 'test' module to the new lowest compat module version.
+	* Update the compat module and Paper dev bundle in the 'test' module if needed.
 	* Update the Minecraft version specific test code inside the 'main' module. The test cases and the default config might need to be updated (e.g. if there have been changes to Minecraft's or Bukkit's item serialization).
 	* Update the code base (optional):
 		* Check for legacy data migrations that could be removed now.
