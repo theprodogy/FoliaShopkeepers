@@ -17,3 +17,8 @@ java.disableAutoTargetJvm()
 		languageVersion = JavaLanguageVersion.of(25)
 	}
 }*/
+
+dependencies {
+	// The dev bundle omits the version of adventure-text-serializer-ansi:
+	implementation platform('net.kyori:adventure-bom:4.26.1')
+}

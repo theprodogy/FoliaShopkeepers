@@ -10,4 +10,8 @@ dependencies {
 	// DataFixerUpper on the compile classpath:
 	implementation platform('net.kyori:adventure-bom:4.26.1')
 	compileOnly 'com.mojang:datafixerupper:9.0.19'
+	testImplementation 'com.mojang:datafixerupper:9.0.19'
+	testRuntimeOnly 'com.mojang:authlib:7.0.61'
+	testRuntimeOnly 'com.mojang:logging:1.6.11'
+	testRuntimeOnly 'com.mojang:jtracy:1.0.37'
 }
