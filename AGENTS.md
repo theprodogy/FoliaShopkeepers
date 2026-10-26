@@ -19,7 +19,7 @@ This is a multi-module Gradle project (Java).
 - `modules/api`: Plugin API project (mostly interfaces for other add-on plugins to depend on).
 - `modules/dist`: Bundles all relevant project outputs into the final plugin jar.
 - `modules/main`: Core plugin code, targeting the lowest supported Bukkit API version.
-- `modules/versions/<Minecraft version>/paper`: Minecraft/Server-version specific module projects that implement logic that might differ across Minecraft versions.
+- `modules/versions/<Minecraft version>`: Minecraft/Server-version specific module projects that implement logic that might differ across Minecraft versions.
 - `modules/external-annotations`: Custom external Eclipse annotations for null checking.
 - `modules/test`: Core plugin tests.
 - `modules/shared`: Shared Gradle scripts, e.g. for reusing Gradle logic across version modules.
