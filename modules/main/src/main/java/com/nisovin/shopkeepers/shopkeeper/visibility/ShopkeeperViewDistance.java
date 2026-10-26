@@ -1,10 +1,11 @@
 package com.nisovin.shopkeepers.shopkeeper.visibility;
 
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.World;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.WeakHashMap;
+
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import com.nisovin.shopkeepers.SKShopkeepersPlugin;
@@ -12,26 +13,44 @@ import com.nisovin.shopkeepers.api.shopobjects.entity.EntityShopObject;
 import com.nisovin.shopkeepers.config.Settings;
 import com.nisovin.shopkeepers.shopkeeper.AbstractShopkeeper;
 import com.nisovin.shopkeepers.util.bukkit.SchedulerUtils;
+import com.nisovin.shopkeepers.util.logging.Log;
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 
 /**
- * Hides shopkeeper entities from players that are further away than the configured
- * {@link Settings#shopkeeperViewDistance}.
+ * Applies the configured {@link Settings#shopkeeperViewDistance} as the entity tracking range of
+ * shopkeeper entities.
  * <p>
- * The server's entity tracking range still limits how far shopkeeper entities are visible.
+ * The server's view distance still limits how far shopkeeper entities are visible.
  */
 public class ShopkeeperViewDistance {
 
 	/**
-	 * The setting value that disables the view distance limit.
+	 * The setting value for the largest possible view distance.
 	 */
 	public static final int ALWAYS_VISIBLE = -1;
+	/**
+	 * The setting value that keeps the server's entity tracking range.
+	 */
+	public static final int SERVER_DEFAULT = 0;
+
+	// Exceeds the maximum view distance of 32 chunks, so the view distance becomes the limit. Not
+	// larger, because the server scales this value.
+	private static final int ALWAYS_VISIBLE_RANGE = 1024;
 
 	private static final long UPDATE_PERIOD_TICKS = 20L;
 
 	private final SKShopkeepersPlugin plugin;
 	private @Nullable ScheduledTask task = null;
+
+	// The server's tracking ranges, by tracked entity:
+	private final Map<Object, Integer> defaultRanges = new WeakHashMap<>();
+
+	// Server internals, resolved on first use:
+	private @Nullable Method getHandleMethod = null;
+	private @Nullable Method getTrackedEntityMethod = null;
+	private @Nullable Field rangeField = null;
+	private boolean unsupported = false;
 
 	public ShopkeeperViewDistance(SKShopkeepersPlugin plugin) {
 		this.plugin = plugin;
@@ -40,7 +59,7 @@ public class ShopkeeperViewDistance {
 	public void onEnable() {
 		task = SchedulerUtils.runTaskTimerOrOmit(
 				plugin,
-				this::updateAllPlayers,
+				this::updateAllShopkeepers,
 				UPDATE_PERIOD_TICKS,
 				UPDATE_PERIOD_TICKS
 		);
@@ -53,36 +72,86 @@ public class ShopkeeperViewDistance {
 		}
 	}
 
-	private void updateAllPlayers() {
-		for (Player player : Bukkit.getOnlinePlayers()) {
-			assert player != null;
-			// Changes to the player's visible entities run on the player's region:
-			SchedulerUtils.runEntityTaskOrOmit(plugin, player, () -> this.updatePlayer(player));
-		}
-	}
+	private void updateAllShopkeepers() {
+		if (unsupported) return;
 
-	private void updatePlayer(Player player) {
-		if (!player.isOnline()) return;
-
-		int viewDistance = Settings.shopkeeperViewDistance;
-		long maxDistanceSquared = (long) viewDistance * viewDistance;
-		World world = player.getWorld();
-		Location playerLocation = player.getLocation();
 		for (AbstractShopkeeper shopkeeper : plugin.getShopkeeperRegistry().getActiveShopkeepers()) {
 			if (!(shopkeeper.getShopObject() instanceof EntityShopObject shopObject)) continue;
 
 			Entity entity = shopObject.getEntity();
-			if (entity == null || !world.equals(entity.getWorld())) continue;
+			if (entity == null) continue;
 
-			boolean visible = (viewDistance == ALWAYS_VISIBLE)
-					|| entity.getLocation().distanceSquared(playerLocation) <= maxDistanceSquared;
-			if (visible == player.canSee(entity)) continue;
-
-			if (visible) {
-				player.showEntity(plugin, entity);
+			if (SchedulerUtils.isFolia()) {
+				// The tracker belongs to the region that owns the entity:
+				SchedulerUtils.runEntityTaskOrOmit(plugin, entity, () -> this.update(entity));
 			} else {
-				player.hideEntity(plugin, entity);
+				this.update(entity);
 			}
 		}
+	}
+
+	private void update(Entity entity) {
+		if (unsupported || !entity.isValid()) return;
+
+		try {
+			Object trackedEntity = this.getTrackedEntity(entity);
+			if (trackedEntity == null) return; // Not tracked yet
+
+			Field rangeField = this.getRangeField(trackedEntity);
+			Integer defaultRange = defaultRanges.get(trackedEntity);
+			if (defaultRange == null) {
+				defaultRange = rangeField.getInt(trackedEntity);
+				defaultRanges.put(trackedEntity, defaultRange);
+			}
+
+			int range = this.getRange(Settings.shopkeeperViewDistance, defaultRange);
+			if (rangeField.getInt(trackedEntity) != range) {
+				rangeField.setInt(trackedEntity, range);
+			}
+		} catch (ReflectiveOperationException | RuntimeException e) {
+			unsupported = true;
+			Log.warning("Shopkeeper view distance is not supported on this server version.", e);
+		}
+	}
+
+	private int getRange(int viewDistance, int defaultRange) {
+		if (viewDistance == SERVER_DEFAULT) return defaultRange;
+		if (viewDistance == ALWAYS_VISIBLE) return ALWAYS_VISIBLE_RANGE;
+		return viewDistance;
+	}
+
+	private @Nullable Object getTrackedEntity(Entity entity) throws ReflectiveOperationException {
+		Method getHandleMethod = this.getHandleMethod;
+		if (getHandleMethod == null) {
+			// Subclasses override this method for their entity type, so we use the base class:
+			Class<?> craftEntityClass = Class.forName(
+					"org.bukkit.craftbukkit.entity.CraftEntity",
+					false,
+					entity.getClass().getClassLoader()
+			);
+			getHandleMethod = craftEntityClass.getMethod("getHandle");
+			this.getHandleMethod = getHandleMethod;
+		}
+
+		Object handle = getHandleMethod.invoke(entity);
+		if (handle == null) return null;
+
+		Method getTrackedEntityMethod = this.getTrackedEntityMethod;
+		if (getTrackedEntityMethod == null) {
+			getTrackedEntityMethod = handle.getClass().getMethod("moonrise$getTrackedEntity");
+			this.getTrackedEntityMethod = getTrackedEntityMethod;
+		}
+
+		return getTrackedEntityMethod.invoke(handle);
+	}
+
+	private Field getRangeField(Object trackedEntity) throws ReflectiveOperationException {
+		Field rangeField = this.rangeField;
+		if (rangeField == null) {
+			rangeField = trackedEntity.getClass().getDeclaredField("range");
+			rangeField.setAccessible(true);
+			this.rangeField = rangeField;
+		}
+		return rangeField;
 	}
 }

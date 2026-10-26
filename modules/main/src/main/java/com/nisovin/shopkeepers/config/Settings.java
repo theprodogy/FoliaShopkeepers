@@ -240,7 +240,7 @@ public class Settings extends Config {
 
 	public static boolean disableGravity = false;
 	public static int gravityChunkRange = 4;
-	public static int shopkeeperViewDistance = -1;
+	public static int shopkeeperViewDistance = 0;
 
 	// A tick period of 4 and higher is clearly noticeable, especially when entities are affected by
 	// gravity.
@@ -951,10 +951,10 @@ public class Settings extends Config {
 			Log.warning(this.getLogPrefix() + "'gravity-chunk-range' cannot be negative.");
 			gravityChunkRange = 0;
 		}
-		if (shopkeeperViewDistance < -1 || shopkeeperViewDistance == 0) {
+		if (shopkeeperViewDistance < -1) {
 			Log.warning(this.getLogPrefix()
-					+ "'shopkeeper-view-distance' has to be positive or -1.");
-			shopkeeperViewDistance = -1;
+					+ "'shopkeeper-view-distance' cannot be less than -1.");
+			shopkeeperViewDistance = 0;
 		}
 		if (entityBehaviorTickPeriod <= 0) {
 			Log.warning(this.getLogPrefix() + "'entity-behavior-tick-period' has to be positive.");

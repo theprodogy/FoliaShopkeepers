@@ -25,6 +25,7 @@ class CommandViewDistance extends Command {
 
 	private static final String ARGUMENT_DISTANCE = "distance";
 	private static final String ARGUMENT_ALWAYS_VISIBLE = "ALWAYS_VISIBLE";
+	private static final String ARGUMENT_DEFAULT = "DEFAULT";
 	private static final String ARGUMENT_BLOCKS = "blocks";
 
 	private static final int MAX_DISTANCE = 512;
@@ -36,11 +37,12 @@ class CommandViewDistance extends Command {
 		super("viewdistance");
 		this.setPermission(ShopkeepersAdminCommand.PERMISSION);
 		this.setDescription(Text.of(
-				"Sets how far shopkeepers are visible, in blocks or ALWAYS_VISIBLE."
+				"Sets how far shopkeepers are visible: Blocks, ALWAYS_VISIBLE or DEFAULT."
 		));
 
 		this.addArgument(new FirstOfArgument(ARGUMENT_DISTANCE, Arrays.asList(
 				new LiteralArgument(ARGUMENT_ALWAYS_VISIBLE),
+				new LiteralArgument(ARGUMENT_DEFAULT),
 				new BoundedIntegerArgument(ARGUMENT_BLOCKS, 1, MAX_DISTANCE) {
 					@Override
 					public List<? extends String> complete(
@@ -74,9 +76,15 @@ class CommandViewDistance extends Command {
 			return;
 		}
 
-		int distance = context.has(ARGUMENT_ALWAYS_VISIBLE)
-				? ShopkeeperViewDistance.ALWAYS_VISIBLE
-				: context.<Integer>get(ARGUMENT_BLOCKS);
+		int distance;
+		if (context.has(ARGUMENT_ALWAYS_VISIBLE)) {
+			distance = ShopkeeperViewDistance.ALWAYS_VISIBLE;
+		} else if (context.has(ARGUMENT_DEFAULT)) {
+			distance = ShopkeeperViewDistance.SERVER_DEFAULT;
+		} else {
+			distance = context.<Integer>get(ARGUMENT_BLOCKS);
+		}
+
 		Settings.shopkeeperViewDistance = distance;
 		Settings.saveConfig();
 		TextUtils.sendMessage(sender, TextUtils.colorize(
@@ -86,6 +94,7 @@ class CommandViewDistance extends Command {
 
 	private static String format(int distance) {
 		if (distance == ShopkeeperViewDistance.ALWAYS_VISIBLE) return ARGUMENT_ALWAYS_VISIBLE;
+		if (distance == ShopkeeperViewDistance.SERVER_DEFAULT) return ARGUMENT_DEFAULT;
 		return distance + " blocks";
 	}
 }
