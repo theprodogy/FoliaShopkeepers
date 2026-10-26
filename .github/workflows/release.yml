@@ -22,7 +22,16 @@ jobs:
         distribution: 'zulu'
     - name: Build Shopkeepers
       # The tag (without the leading 'v') replaces the snapshot version:
-      run: ./gradlew build -Pversion="${GITHUB_REF_NAME#v}" --no-daemon
+      run: |
+        set -o pipefail
+        ./gradlew build -Pversion="${GITHUB_REF_NAME#v}" --no-daemon --console=plain 2>&1 | tee build.log
+    - name: Report build errors
+      if: failure()
+      # Annotations are visible without signing in, unlike the raw logs:
+      run: |
+        grep -E "What went wrong|error:|ERROR in|FAILED|> " build.log | head -40 | while IFS= read -r line; do
+          echo "::error::$line"
+        done
     - name: Publish release
       uses: softprops/action-gh-release@v2
       with:
